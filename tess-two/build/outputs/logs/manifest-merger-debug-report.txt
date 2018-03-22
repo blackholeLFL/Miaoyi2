@@ -1,37 +1,37 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:1-26:12
+ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:1-26:12
 	package
-		ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:18:5-47
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
+		ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:18:5-47
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
 	android:versionName
-		ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:20:5-30
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
+		ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:20:5-30
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
 	xmlns:android
-		ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:17:11-69
+		ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:17:11-69
 	android:versionCode
-		ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:19:5-28
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
+		ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:19:5-28
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
 uses-sdk
-ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:22:5-24:41
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:22:5-24:41
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:22:5-24:41
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:22:5-24:41
-INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:22:5-24:41
+ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:22:5-24:41
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:22:5-24:41
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:22:5-24:41
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:22:5-24:41
+INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:22:5-24:41
 	android:targetSdkVersion
-		ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:24:9-38
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
+		ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:24:9-38
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
 	android:minSdkVersion
-		ADDED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml:23:9-34
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
-		INJECTED from /Users/blackhole/AndroidStudioProjects/Miaoyi2/tess-two/AndroidManifest.xml
+		ADDED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml:23:9-34
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml
+		INJECTED from D:\Android_workspace\Miaoyi2_fanyi\tess-two\AndroidManifest.xml

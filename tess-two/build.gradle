@@ -9,7 +9,6 @@ properties.load(project.rootProject.file('local.properties').newDataInputStream(
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 9

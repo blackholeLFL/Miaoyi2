@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Miaoyi2.iml" filepath="$PROJECT_DIR$/Miaoyi2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Miaoyi2_fanyi.iml" filepath="$PROJECT_DIR$/Miaoyi2_fanyi.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/tess-two/tess-two.iml" filepath="$PROJECT_DIR$/tess-two/tess-two.iml" />
     </modules>
