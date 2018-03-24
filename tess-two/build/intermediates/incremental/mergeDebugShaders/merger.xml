@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="D:\Android_workspace\Miaoyi2_fanyi\tess-two\src\main\shaders"/></dataSet><dataSet config="debug"><source path="D:\Android_workspace\Miaoyi2_fanyi\tess-two\src\debug\shaders"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="D:\Android_workspace\Miaoyi2\tess-two\src\main\shaders"/></dataSet><dataSet config="debug"><source path="D:\Android_workspace\Miaoyi2\tess-two\src\debug\shaders"/></dataSet></merger>
