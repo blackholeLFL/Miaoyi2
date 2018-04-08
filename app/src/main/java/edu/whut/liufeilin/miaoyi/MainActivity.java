@@ -4,29 +4,36 @@ package edu.whut.liufeilin.miaoyi;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -55,27 +62,40 @@ public class MainActivity extends Activity {
     //private static Context context;
     private static final String APP_ID = "20180318000137277";
     private static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
+    private static MainActivity mainActivity;
     String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
     Button btn_openCamera;
     Button btn_findText;
     Button btn_getTxt;
     Button btn_openAlbum;
     Button btn_trans;
-    OcrView ocrView;
     TextView txtget;
     String wait_trans;//识别出的等待翻译的字符串
-    double scale = 1.0;
-    Bitmap bmp = null;
-    TessBaseAPI mTess;
-    String sdPath;
-    String picPath;
-    String TXT_get = null;
+    FloatService floatService;
+    DisplayMetrics dm;
     ThreadPoolExecutor threadPoolExecutor;//线程池
     String filename;
-    int ScreenHeight;
-    int ScreenWidth;
-    public static int REQUST_ORIGINAL = 101;//原图标志
 
+    public static ShotUtils shotUtils;
+//    public static OcrView ocrView;
+    public static int ScreenHeight;
+    public static int ScreenWidth;
+    public static String PACKAGE_NAME;
+    public static int REQUST_ORIGINAL = 101;//原图标志
+    FloatService.MyBinder myBinder;
+
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            myBinder = (FloatService.MyBinder) service;
+            floatService=myBinder.getService();
+        }
+    };
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
@@ -86,31 +106,56 @@ public class MainActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-//            if(msg.what==0)
-            wait_trans = GetTextFromRect();
+            wait_trans = floatService.GetTextFromRect();
             txtget.setText(wait_trans);
 
         }
     };
-
+    private void bindServiceConnection() {
+        Intent intent = new Intent(MainActivity.this, FloatService.class);
+        startService(intent);
+        bindService(intent, connection, this.BIND_AUTO_CREATE);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //context = MainActivity.this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mainActivity = this;
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+            if (Settings.canDrawOverlays(MainActivity.this))
+            {
+                Toast.makeText(MainActivity.this,"已开启Toucher", Toast.LENGTH_SHORT).show();
+            }else
+            {
+                //若没有权限，提示获取.
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
+                Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
+                startActivity(intent);
+            }
+        }
+
+
+        PACKAGE_NAME=getApplicationContext().getPackageName();
+        dm = getResources().getDisplayMetrics();
+        ScreenHeight = dm.heightPixels;
+        ScreenWidth = dm.widthPixels;
+        shotUtils = new ShotUtils(getApplicationContext());
+        shotUtils.init(MainActivity.this);
+
+        floatService = new FloatService();
+        bindServiceConnection();
+
         btn_openCamera = findViewById(R.id.btn_openCamera);
         btn_findText = findViewById(R.id.btn_findtext);
         btn_getTxt = findViewById(R.id.btn_gettext);
         btn_openAlbum = findViewById(R.id.btn_openAlbum);
         btn_trans = findViewById(R.id.btn_trans);
-
-        ocrView = new OcrView(this);
-
+//        ocrView = new OcrView(this);
         txtget = findViewById(R.id.txt_get);
         threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
-        sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + getPackageName() + "/files";
-        picPath = sdPath + "/" + "temp.png";
-        filename = sdPath + "/test/tessdata/chi_sim.traineddata";
+        filename = floatService.sdPath + "/test/tessdata/chi_sim.traineddata";
 
         btn_openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,7 +180,7 @@ public class MainActivity extends Activity {
         btn_findText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ocrView.SelectRect();
+                floatService.ocrView.SelectRect();
             }
         });
         btn_getTxt.setOnClickListener(new View.OnClickListener() {
@@ -145,7 +190,6 @@ public class MainActivity extends Activity {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        TXT_get = GetTextFromRect();
                         handler.sendEmptyMessage(0);
                     }
                 };
@@ -188,22 +232,19 @@ public class MainActivity extends Activity {
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
-        addContentView(ocrView, p);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                initTessBaseData();
-            }
-        };
-        threadPoolExecutor.execute(runnable);
+//        addContentView(ocrView, p);
+
         // Example of a call to a native method
         // TextView tv = (TextView) findViewById(R.id.sample_text);
         // tv.setText(stringFromJNI());
-        WindowManager wm = this.getWindowManager();
-        ScreenHeight = wm.getDefaultDisplay().getHeight();
-        ScreenWidth = wm.getDefaultDisplay().getWidth();
+
     }
 
+
+
+    public static MainActivity getMainActivity() {
+        return mainActivity;
+    }
 
     private void setText(final TextView text, final String value) {
         runOnUiThread(new Runnable() {
@@ -214,16 +255,63 @@ public class MainActivity extends Activity {
         });
     }
 
+    public void getPermisson(){
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+            if (Settings.canDrawOverlays(MainActivity.this))
+            {
 
-    private void initTessBaseData() {
-    /*初始化Tess*/
-        mTess = new TessBaseAPI();
-        String datapath = sdPath + "/test/";
-        String language = "chi_sim";
-        File dir = new File(datapath + "tessdata/");
-        if (!dir.exists())
-            dir.mkdirs();
-        mTess.init(datapath, language);
+                floatService.windowManager.addView(floatService.OcrLayout,floatService.params1);
+            }else
+            {
+                //若没有权限，提示获取.
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
+                Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
+                startActivityForResult(intent,2);
+            }
+        }
+
+    }
+
+
+    @TargetApi(19)
+    private void handleImageOnKitKat(Intent data) {
+        String imagePath = null;
+        Uri uri = data.getData();
+        if (DocumentsContract.isDocumentUri(this, uri)) {
+            String docId = DocumentsContract.getDocumentId(uri);
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+                imagePath = floatService.getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
+                imagePath = floatService.getImagePath(contentUri, null);
+            }
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            imagePath = floatService.getImagePath(uri, null);
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            imagePath = uri.getPath();
+        }
+        try {
+            floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
+            ImageView im_camera = findViewById(R.id.img_camera);
+            im_camera.setImageBitmap(floatService.bmp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void handleImageBeforeKitKat(Intent data) {
+        Uri uri = data.getData();
+        String imagePath = floatService.getImagePath(uri, null);
+        try {
+            floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
+            ImageView im_camera = findViewById(R.id.img_camera);
+            im_camera.setImageBitmap(floatService.bmp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -231,9 +319,9 @@ public class MainActivity extends Activity {
         //首次运行程序，载入训练文件到sd卡
         InputStream myInput;
         getExternalFilesDir(null).getAbsolutePath();
-        File dir = new File(sdPath + File.separator + "test/tessdata/");
+        File dir = new File(floatService.sdPath + File.separator + "test/tessdata/");
         dir.mkdirs();
-        File filea = new File(sdPath + File.separator + "test/tessdata/chi_sim.traineddata");
+        File filea = new File(floatService.sdPath + File.separator + "test/tessdata/chi_sim.traineddata");
 
         filea.createNewFile();
 
@@ -252,118 +340,6 @@ public class MainActivity extends Activity {
     }
 
 
-    public boolean isFileExist(String fileName, String path) {
-        /*
-        判断sd卡上文件是否存在
-        无效 原因--未知..
-         */
-        File file = new File(sdCardRoot + path + File.separator + fileName);
-        boolean f = file.exists();
-        return file.exists();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case 1:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getImage("album");
-                } else {
-                    Toast.makeText(this, "You denied the permisson", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            default:
-        }
-    }
-
-    @TargetApi(19)
-    private void handleImageOnKitKat(Intent data) {
-        String imagePath = null;
-        Uri uri = data.getData();
-        if (DocumentsContract.isDocumentUri(this, uri)) {
-            String docId = DocumentsContract.getDocumentId(uri);
-            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
-                String id = docId.split(":")[1];
-                String selection = MediaStore.Images.Media._ID + "=" + id;
-                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
-            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
-                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
-                imagePath = getImagePath(contentUri, null);
-            }
-        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            imagePath = getImagePath(uri, null);
-        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            imagePath = uri.getPath();
-        }
-        try {
-            bmp = FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.img_camera);
-            im_camera.setImageBitmap(bmp);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void handleImageBeforeKitKat(Intent data) {
-        Uri uri = data.getData();
-        String imagePath = getImagePath(uri, null);
-        try {
-            bmp = FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.img_camera);
-            im_camera.setImageBitmap(bmp);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private String getImagePath(Uri uri, String selection) {
-        String path = null;
-        Cursor cursor = getContentResolver().query(uri, null, selection, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            }
-            cursor.close();
-        }
-        return path;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == Activity.RESULT_OK && requestCode == 2) {  //从相册选取图片
-            if (Build.VERSION.SDK_INT >= 19) {
-                handleImageOnKitKat(data);
-            } else {
-                handleImageBeforeKitKat(data);
-            }
-        } else if (resultCode == Activity.RESULT_OK && requestCode == 1) {   //从相机选取图片
-            FileInputStream fis = null;
-            try {
-//                Log.e("sdpath2",picPath);
-                fis = new FileInputStream(picPath);
-                bmp = null;
-                bmp = FixImageOrientation(picPath, "camera");
-                ImageView im_camera = findViewById(R.id.img_camera);
-                im_camera.setImageBitmap(bmp);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            // Toast.makeText(this,"没有拍到照片",Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
     protected void getImage(String source) {
     /*
     得到高质量照片
@@ -373,7 +349,7 @@ public class MainActivity extends Activity {
             getImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             Uri uri;
             if (Build.VERSION.SDK_INT >= 24) {
-                File g = new File(picPath);//测试错误
+                File g = new File(floatService.picPath);//测试错误
                 try {
                     g.createNewFile();
                 } catch (IOException e) {
@@ -381,7 +357,7 @@ public class MainActivity extends Activity {
                 }
                 uri = FileProvider.getUriForFile(this, "blackhole", g);
             } else {
-                uri = Uri.fromFile(new File(picPath));
+                uri = Uri.fromFile(new File(floatService.picPath));
             }
             getImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             startActivityForResult(getImage, 1);  //相机
@@ -394,78 +370,66 @@ public class MainActivity extends Activity {
 
     }
 
-
-    public Bitmap FixImageOrientation(String imagePath, String option) throws IOException {
-        //检验图片地址是否正确
-        if (imagePath == null || imagePath.equals(""))
-            return null;
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        if (option.equalsIgnoreCase("camera")) {
-            options.inSampleSize = 2;    //调整图片为原来的1/2
-        } else if (option.equalsIgnoreCase("album")) {
-            options.inSampleSize = 1;
-        }
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-        //图片旋转角度
-        int rotate = 0;
-
-        ExifInterface exif = new ExifInterface(imagePath);
-        //先获取当前图像的方向，判断是否需要旋转
-        int imageOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-//        Log.i(Tag, "Current image orientation is " + imageOrientation);
-
-        switch (imageOrientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90:
-                rotate = 90;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 1:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getImage("album");
+                } else {
+                    Toast.makeText(this, "You denied the permisson", Toast.LENGTH_SHORT).show();
+                }
                 break;
-            case ExifInterface.ORIENTATION_ROTATE_180:
-                rotate = 180;
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_270:
-                rotate = 270;
+            case 2:
+                Log.d("onRequest","2");
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
+                    if (!Settings.canDrawOverlays(this)) {
+                        // SYSTEM_ALERT_WINDOW permission not granted...
+                        Toast.makeText(MainActivity.this, "not granted", Toast.LENGTH_SHORT);
+                    }
+                }
                 break;
             default:
-                break;
         }
-        // 获取当前图片的宽和高
-        int w = bitmap.getWidth();
-        int h = bitmap.getHeight();
-        Matrix mtx = new Matrix();
-        // 使用Matrix对图片进行处理
-        if (option.equalsIgnoreCase("album")) {
-            mtx.postScale(0.75f, 0.75f);
-        }
-        mtx.preRotate(rotate);
-        // 旋转图片
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
-        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-
-
-        return bitmap;
-
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("MainActivity",String.valueOf(requestCode));
 
-    public String GetTextFromRect() {
-        mTess.clear();
-        if (bmp == null) return null;
-        mTess.setImage(bmp);
-//                mTess.setRectangle(0,0,1220,600);
-        scale = (double) bmp.getWidth() / (double) ScreenWidth;
-        if (scale > 1)
-            mTess.setRectangle((int) (scale * ocrView.rect.left), (int) (scale * ocrView.rect.top), (int) (scale * ocrView.rect.width()), (int) (scale * ocrView.rect.height()));
-        else
-            mTess.setRectangle(ocrView.rect.left, ocrView.rect.top, ocrView.rect.width(), ocrView.rect.height());
+        if (resultCode == Activity.RESULT_OK && requestCode == 2) {  //从相册选取图片
+            if (Build.VERSION.SDK_INT >= 19) {
+                handleImageOnKitKat(data);
+            } else {
+                handleImageBeforeKitKat(data);
+            }
+        } else if (resultCode == Activity.RESULT_OK && requestCode == 1) {   //从相机选取图片
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(floatService.picPath);
+                floatService.bmp = null;
+                floatService.bmp = floatService.FixImageOrientation(floatService.picPath, "camera");
+                ImageView im_camera = findViewById(R.id.img_camera);
+                im_camera.setImageBitmap(floatService.bmp);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if(requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION){
+            Log.d("MainActivity","requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION");
 
-//        Log.i(TAG,"hhhhhhhhhhhhhh "+ocrView.rect.left+"\\"+ocrView.rect.top+"\\"+ocrView.rect.width()+"\\"+ocrView.rect.height());
-//        Log.i(TAG,"hhhhhhhhhhhhhh "+"\\"+scale+(scale*ocrView.rect.left)+"\\"+(int)(scale*ocrView.rect.top)+
-//                "\\"+(int)(scale*ocrView.rect.width())+"\\"+(int)(scale*ocrView.rect.height()));
-//        Log.i(TAG,""+bmp.getWidth()+"]]"+ bmp.getHeight());
-//        Log.i(TAG,""+ScreenWidth+"]]"+ ScreenHeight);
-
-        String result = mTess.getUTF8Text();
-        return result;
+            floatService.shotUtils.setData(data);
+        }else {
+            // Toast.makeText(this,"没有拍到照片",Toast.LENGTH_SHORT).show();
+        }
     }
+
 
 
     /**
