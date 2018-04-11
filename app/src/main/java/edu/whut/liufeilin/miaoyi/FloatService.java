@@ -7,6 +7,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,7 @@ import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -55,6 +57,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.whut.liufeilin.miaoyi.api.TransApi;
 import edu.whut.liufeilin.miaoyi.view.OcrView;
 
 
@@ -93,8 +96,8 @@ public class FloatService extends Service{
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            result = GetTextFromRect();
-            result = "结果为："+result;
+            Bundle data = msg.getData();
+            String result = data.getString("result");
             textView.setText(result);
 
         }
@@ -144,6 +147,7 @@ public class FloatService extends Service{
     /*初始化Tess*/
         mTess = new TessBaseAPI();
         String datapath = sdPath + "/test/";
+        Log.d("datapath",datapath);
         String language = "chi_sim";
         File dir = new File(datapath + "tessdata/");
         if (!dir.exists())
@@ -173,42 +177,22 @@ public class FloatService extends Service{
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         return is;
     }
-
-    public Bitmap FixImageOrientation(Bitmap bmp) throws IOException {
+*/
+    public Bitmap FixImageOrientation(Bitmap bitmap) throws IOException {
         //检验图片地址是否正确
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 1;
 
         //图片旋转角度
-        int rotate = 0;
-        InputStream temp = Bitmap2InputStream(bmp);
-        ExifInterface exif = new ExifInterface(temp);
-        //先获取当前图像的方向，判断是否需要旋转
-        int imageOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-//        Log.i(Tag, "Current image orientation is " + imageOrientation);
+        int rotate = 90;
 
-        switch (imageOrientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90:
-                rotate = 90;
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_180:
-                rotate = 180;
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_270:
-                rotate = 270;
-                break;
-            default:
-                break;
-        }
         // 获取当前图片的宽和高
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
         Matrix mtx = new Matrix();
         // 使用Matrix对图片进行处理
-        if (option.equalsIgnoreCase("album")) {
-            mtx.postScale(0.75f, 0.75f);
-        }
+
         mtx.preRotate(rotate);
         // 旋转图片
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
@@ -218,7 +202,7 @@ public class FloatService extends Service{
         return bitmap;
 
     }
-*/
+
 
     public Bitmap FixImageOrientation(String imagePath, String option) throws IOException {
         //检验图片地址是否正确
@@ -270,7 +254,7 @@ public class FloatService extends Service{
 
     }
 
-    private void createOcrView(){
+    public void createOcrView(){
 
         params1 = new WindowManager.LayoutParams();
 //        params1.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
@@ -281,8 +265,13 @@ public class FloatService extends Service{
         }
         params1.format = PixelFormat.RGBA_8888;
 //        params1.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        params1.width = ScreenWidth;
-        params1.height = ScreenHeight;
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            params1.width=ScreenHeight;
+            params1.height=ScreenWidth;
+        }else{
+            params1.width = ScreenWidth;
+            params1.height = ScreenHeight;
+        }
         params1.gravity = Gravity.LEFT | Gravity.TOP;
         params1.x = 0;
         params1.y = 0;
@@ -304,7 +293,15 @@ public class FloatService extends Service{
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
-                            handler.sendEmptyMessage(0);
+                            result = Screen_GetTextFromRect();
+                            TransApi api = new TransApi(MainActivity.APP_ID, MainActivity.SECURITY_KEY);
+                            result = result+"\n"+api.getTransResult(result, "auto", "en");
+                            result = "结果为："+result;
+                            Message msg = new Message();
+                            Bundle data = new Bundle();
+                            data.putString("result",result);
+                            msg.setData(data);
+                            handler.sendMessage(msg);
                         }
                     };
                     threadPoolExecutor.execute(r);
@@ -396,6 +393,13 @@ public class FloatService extends Service{
                             createOcrView();
                             try{
 //                                bmp=FixImageOrientation(picPath,"album");
+                                /*
+                                if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+                                    Log.d("屏幕方向","横屏");
+                                    bmp=FixImageOrientation(bitmap);
+                                }
+                                else
+                                    */
                                 bmp = bitmap;
                                 ocrView.SelectRect();
                             }catch (Exception e){
@@ -480,6 +484,22 @@ public class FloatService extends Service{
         }
     }
 
+    public String Screen_GetTextFromRect(){
+        mTess.clear();
+        if (bmp == null) return null;
+        mTess.setImage(bmp);
+        Log.d("GetTextFromRect","left:"+ocrView.rect.left+" top:"+ocrView.rect.top+" width:"+ocrView.rect.width()+" height:"+ocrView.rect.height());
+        mTess.setRectangle(ocrView.rect.left, ocrView.rect.top, ocrView.rect.width(), ocrView.rect.height());
+
+        String result;
+        if(ocrView.rect.width()<=0||ocrView.rect.height()<=0){
+            result = "";
+        }else{
+            result = mTess.getUTF8Text();
+        }
+        return result;
+    }
+
     public String GetTextFromRect() {
         mTess.clear();
         if (bmp == null) return null;
@@ -498,7 +518,7 @@ public class FloatService extends Service{
 //        Log.i(TAG,""+bmp.getWidth()+"]]"+ bmp.getHeight());
 //        Log.i(TAG,""+ScreenWidth+"]]"+ ScreenHeight);
         String result;
-        if(ocrView.rect.width()==0||ocrView.rect.height()==0){
+        if(ocrView.rect.width()<=0||ocrView.rect.height()<=0){
             result = "";
         }else{
             result = mTess.getUTF8Text();

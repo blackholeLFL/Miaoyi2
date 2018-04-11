@@ -39,7 +39,7 @@ public class ShotUtils {
     public ShotUtils(Context mContext) {
         super();
         this.mContext = mContext;
-        createImageReader();
+//        createImageReader();
     }
 
     public void setData(Intent mResultData){
@@ -70,7 +70,7 @@ public class ShotUtils {
         Log.d("startScreenShot","执行");
 //        startVirtual();
 //        startCapture(mShotListener);
-
+        createImageReader();
         Handler handler1 = new Handler();
         handler1.postDelayed(new Runnable() {
             public void run() {
@@ -148,7 +148,10 @@ public class ShotUtils {
 
     private Bitmap covetBitmap(Image image){
         int width = image.getWidth();
+        Log.d("covetBitmap width",String.valueOf(width));
         int height = image.getHeight();
+        Log.d("covetBitmap height",String.valueOf(height));
+
         final Image.Plane[] planes = image.getPlanes();
         final ByteBuffer buffer = planes[0].getBuffer();
         //每个像素的间距
@@ -189,6 +192,7 @@ public class ShotUtils {
                 .getSystemService(Context.WINDOW_SERVICE);
 
         int width = wm.getDefaultDisplay().getWidth();
+        Log.d("getScreenWidth",String.valueOf(width));
         return width;
     }
 
@@ -199,6 +203,7 @@ public class ShotUtils {
         WindowManager wm = (WindowManager) mContext
                 .getSystemService(Context.WINDOW_SERVICE);
         int height = wm.getDefaultDisplay().getHeight();
+        Log.d("getScreenHeight",String.valueOf(height));
         return height;
     }
 

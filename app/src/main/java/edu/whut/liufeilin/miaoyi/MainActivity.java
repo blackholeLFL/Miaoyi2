@@ -60,8 +60,8 @@ import edu.whut.liufeilin.miaoyi.view.OcrView;
 
 public class MainActivity extends Activity {
     //private static Context context;
-    private static final String APP_ID = "20180318000137277";
-    private static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
+    public static final String APP_ID = "20180318000137277";
+    public static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
     private static MainActivity mainActivity;
     String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
     Button btn_openCamera;
@@ -137,7 +137,7 @@ public class MainActivity extends Activity {
         }
 
 
-        PACKAGE_NAME=getApplicationContext().getPackageName();
+        PACKAGE_NAME=getPackageName();
         dm = getResources().getDisplayMetrics();
         ScreenHeight = dm.heightPixels;
         ScreenWidth = dm.widthPixels;
@@ -180,6 +180,7 @@ public class MainActivity extends Activity {
         btn_findText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                floatService.createOcrView();
                 floatService.ocrView.SelectRect();
             }
         });
@@ -259,8 +260,13 @@ public class MainActivity extends Activity {
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
             if (Settings.canDrawOverlays(MainActivity.this))
             {
+                try {
+                    floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
+                }catch(Exception e){
+                    floatService.windowManager.removeView(floatService.OcrLayout);
+                    floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
+                }
 
-                floatService.windowManager.addView(floatService.OcrLayout,floatService.params1);
             }else
             {
                 //若没有权限，提示获取.
