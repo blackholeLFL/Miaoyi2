@@ -77,12 +77,14 @@ public class MainActivity extends Activity {
     String filename;
     String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
 
+    String chinese="chi_sim.traineddata";
+    String english="eng_sim.traineddata";
+    String Language = english;
+
     public static ShotUtils shotUtils;
-//    public static OcrView ocrView;
     public static int ScreenHeight;
     public static int ScreenWidth;
     public static String PACKAGE_NAME = "edu.whut.liufeilin.miaoyi";
-    public static int REQUST_ORIGINAL = 101;//原图标志
     FloatService.MyBinder myBinder;
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -125,7 +127,7 @@ public class MainActivity extends Activity {
 
         Log.i("onCreate","执行");
 
-        filename = sdPath + "/test/tessdata/chi_sim.traineddata";
+        filename = sdPath + "/test/tessdata/"+Language;
         //手机中不存在训练文件，则在sd卡中写入对应的文件
         //应用首次运行，将训练文件拷贝到sd卡中
         SharedPreferences sp = getSharedPreferences("ocr_test", Context.MODE_PRIVATE);
@@ -337,12 +339,12 @@ public class MainActivity extends Activity {
         getExternalFilesDir(null).getAbsolutePath();
         File dir = new File(sdPath + File.separator + "test/tessdata/");
         dir.mkdirs();
-        File filea = new File(sdPath + File.separator + "test/tessdata/chi_sim.traineddata");
+        File filea = new File(sdPath + File.separator + "test/tessdata/"+Language);
 
         filea.createNewFile();
 
         OutputStream myOutput = new FileOutputStream(strFileName);
-        myInput = this.getAssets().open("chi_sim.traineddata");
+        myInput = this.getAssets().open(Language);
         byte[] buffer = new byte[1024];
         int length = myInput.read(buffer);
         while (length > 0) {

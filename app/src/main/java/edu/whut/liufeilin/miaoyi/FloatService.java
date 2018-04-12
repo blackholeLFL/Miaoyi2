@@ -37,8 +37,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,7 +72,7 @@ import edu.whut.liufeilin.miaoyi.view.OcrView;
 public class FloatService extends Service{
     public static final String TAG = "FloatService";
     private MyBinder mBinder = new MyBinder();
-    ConstraintLayout toucherLayout;
+    LinearLayout toucherLayout;
     ConstraintLayout OcrLayout;
     WindowManager.LayoutParams params;
     WindowManager.LayoutParams params1;
@@ -77,6 +80,7 @@ public class FloatService extends Service{
     TextView textView;
     ShotUtils shotUtils=MainActivity.shotUtils;
     String result;
+    String language = "eng_sim";
 
     ThreadPoolExecutor threadPoolExecutor;
     TessBaseAPI mTess;
@@ -147,7 +151,7 @@ public class FloatService extends Service{
         mTess = new TessBaseAPI();
         String datapath = sdPath + "/test/";
         Log.d("datapath",datapath);
-        String language = "chi_sim";
+//        String language = "chi_sim";
         File dir = new File(datapath + "tessdata/");
         if (!dir.exists())
             dir.mkdirs();
@@ -299,7 +303,7 @@ public class FloatService extends Service{
                         public void run() {
                             result = Screen_GetTextFromRect();
                             TransApi api = new TransApi(MainActivity.APP_ID, MainActivity.SECURITY_KEY);
-                            result = result+"\n"+api.getTransResult(result, "auto", "en");
+                            result = result+"\n"+api.getTransResult(result, "auto", "zh");
                             result = "结果为："+result;
                             Message msg = new Message();
                             Bundle data = new Bundle();
@@ -341,12 +345,12 @@ public class FloatService extends Service{
         params.y = 0;
 
         //设置悬浮窗口长宽数据.
-        params.width = 300;
-        params.height = 300;
+        params.width = 500;
+        params.height = 500;
 
         LayoutInflater inflater = LayoutInflater.from(getApplication());
         //获取浮动窗口视图所在布局.
-        toucherLayout = (ConstraintLayout) inflater.inflate(R.layout.toucherlayout,null);
+        toucherLayout = (LinearLayout) inflater.inflate(R.layout.toucherlayout,null);
         OcrLayout = (ConstraintLayout)inflater.inflate(R.layout.ocrview, null);
         //添加toucherlayout
         windowManager.addView(toucherLayout,params);
@@ -373,10 +377,11 @@ public class FloatService extends Service{
 
         //浮动窗口按钮.
         textView = (TextView) toucherLayout.findViewById(R.id.text);
-
+        LinearLayout linearLayout = (LinearLayout) toucherLayout.findViewById(R.id.layout);
+        Button button = (Button)toucherLayout.findViewById(R.id.button);
         //长按：截图并开始选取区域
         //双击：文字识别并显示翻译结果
-        textView.setOnClickListener(new View.OnClickListener() {
+        linearLayout.setOnClickListener(new View.OnClickListener() {
             long[] hints = new long[2];
             @Override
             public void onClick(View v) {
@@ -388,13 +393,14 @@ public class FloatService extends Service{
 //                    Toast.makeText(FloatService.this,"连续点击两次以退出", Toast.LENGTH_SHORT).show();
                 }else{
                     Log.d("startScreenShot","执行");
+                    createOcrView();
                     shotUtils.startScreenShot(new ShotUtils.ShotListener() {
                         @Override
                         public void OnSuccess(final Bitmap bitmap) {
                             Log.d("OnSuccess","执行");
 //                            saveMyBitmap(bitmap);
                             Toast.makeText(FloatService.this,"截图成功", Toast.LENGTH_SHORT).show();
-                            createOcrView();
+
                             try{
 //                                bmp=FixImageOrientation(picPath,"album");
                                 /*
@@ -443,11 +449,11 @@ public class FloatService extends Service{
         });
         */
 
-        textView.setOnTouchListener(new View.OnTouchListener() {
+        button.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                params.x = (int) event.getRawX() - 150;
-                params.y = (int) event.getRawY() - 150 - statusBarHeight;
+                params.x = (int) event.getRawX() - 250;
+                params.y = (int) event.getRawY() - 50 - statusBarHeight;
                 windowManager.updateViewLayout(toucherLayout,params);
                 return false;
             }
