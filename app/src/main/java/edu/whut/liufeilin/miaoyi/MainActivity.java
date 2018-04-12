@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
     public static final String APP_ID = "20180318000137277";
     public static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
     private static MainActivity mainActivity;
-    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+//    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
     Button btn_openCamera;
     Button btn_findText;
     Button btn_getTxt;
@@ -75,12 +75,13 @@ public class MainActivity extends Activity {
     DisplayMetrics dm;
     ThreadPoolExecutor threadPoolExecutor;//线程池
     String filename;
+    String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
 
     public static ShotUtils shotUtils;
 //    public static OcrView ocrView;
     public static int ScreenHeight;
     public static int ScreenWidth;
-    public static String PACKAGE_NAME;
+    public static String PACKAGE_NAME = "edu.whut.liufeilin.miaoyi";
     public static int REQUST_ORIGINAL = 101;//原图标志
     FloatService.MyBinder myBinder;
 
@@ -122,6 +123,23 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.i("onCreate","执行");
+
+        filename = sdPath + "/test/tessdata/chi_sim.traineddata";
+        //手机中不存在训练文件，则在sd卡中写入对应的文件
+        //应用首次运行，将训练文件拷贝到sd卡中
+        SharedPreferences sp = getSharedPreferences("ocr_test", Context.MODE_PRIVATE);
+        int int_runtimes = sp.getInt("run", 0);
+        if (int_runtimes == 0) {
+            try {
+                copyBigDataToSD(filename);
+                sp.edit().putInt("run", 1).commit();
+                Log.d("success", "载入完成");
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("error", "报错");
+            }
+        }
         mainActivity = this;
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
             if (Settings.canDrawOverlays(MainActivity.this))
@@ -130,14 +148,12 @@ public class MainActivity extends Activity {
             }else
             {
                 //若没有权限，提示获取.
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + PACKAGE_NAME));
                 Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
                 startActivity(intent);
             }
         }
 
-
-        PACKAGE_NAME=getPackageName();
         dm = getResources().getDisplayMetrics();
         ScreenHeight = dm.heightPixels;
         ScreenWidth = dm.widthPixels;
@@ -155,7 +171,6 @@ public class MainActivity extends Activity {
 //        ocrView = new OcrView(this);
         txtget = findViewById(R.id.txt_get);
         threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
-        filename = floatService.sdPath + "/test/tessdata/chi_sim.traineddata";
 
         btn_openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -215,20 +230,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        //手机中不存在训练文件，则在sd卡中写入对应的文件
-        //应用首次运行，将训练文件拷贝到sd卡中
-        SharedPreferences sp = getSharedPreferences("ocr_test", Context.MODE_PRIVATE);
-        int int_runtimes = sp.getInt("run", 0);
-        if (int_runtimes == 0) {
-            try {
-                copyBigDataToSD(filename);
-                sp.edit().putInt("run", 1).commit();
-                Log.d("success", "载入完成");
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.d("error", "报错");
-            }
-        }
+
         RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
@@ -239,6 +241,7 @@ public class MainActivity extends Activity {
         // TextView tv = (TextView) findViewById(R.id.sample_text);
         // tv.setText(stringFromJNI());
 
+        Log.i("onCreate","执行完毕");
     }
 
 
@@ -273,6 +276,13 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
                 Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
                 startActivityForResult(intent,2);
+            }
+        }else{
+            try {
+                floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
+            }catch(Exception e){
+                floatService.windowManager.removeView(floatService.OcrLayout);
+                floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
             }
         }
 
@@ -325,9 +335,9 @@ public class MainActivity extends Activity {
         //首次运行程序，载入训练文件到sd卡
         InputStream myInput;
         getExternalFilesDir(null).getAbsolutePath();
-        File dir = new File(floatService.sdPath + File.separator + "test/tessdata/");
+        File dir = new File(sdPath + File.separator + "test/tessdata/");
         dir.mkdirs();
-        File filea = new File(floatService.sdPath + File.separator + "test/tessdata/chi_sim.traineddata");
+        File filea = new File(sdPath + File.separator + "test/tessdata/chi_sim.traineddata");
 
         filea.createNewFile();
 

@@ -6,7 +6,6 @@ import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -255,7 +254,7 @@ public class FloatService extends Service{
     }
 
     public void createOcrView(){
-
+        Log.d("createOcrView","已执行");
         params1 = new WindowManager.LayoutParams();
 //        params1.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
@@ -280,7 +279,12 @@ public class FloatService extends Service{
         MainActivity.getMainActivity().getPermisson();
 
 
-        ocrView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+        ocrView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         ocrView.setOnClickListener(new View.OnClickListener() {
             long[] hints = new long[2];
             @Override

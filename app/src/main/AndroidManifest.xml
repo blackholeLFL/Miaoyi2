@@ -25,7 +25,12 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
-        <service android:name=".FloatService" />
+        <service android:name=".FloatService"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="edu.whut.liufeilin.miaoyi" />
+            </intent-filter>
+        </service>
 
     </application>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
