@@ -1,78 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:background="@drawable/bg"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        >
-        <ImageView
-            android:id="@+id/img_camera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true" />
-    </LinearLayout>
+        android:visibility="invisible" />
+    <!--
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/img_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true" />
+        </LinearLayout>-->
+
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        >
-        <TextView
-            android:id="@+id/txt_get"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="horizontal">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:hint="等待识别..."
-            android:textSize="15sp"
-           />
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <Button
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/txt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageButton
                 android:id="@+id/btn_openCamera"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="相机拍照"
-                android:textSize="12dp"
-                android:layout_weight="1" />
-            <Button
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/camera"
+                android:background="#00000000"/>
+
+            <ImageButton
                 android:id="@+id/btn_openAlbum"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="选择图片"
-                android:textSize="12dp"
-                android:layout_weight="1" />
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btn_findtext"
-                android:text="选取区域"
-                android:textSize="12dp"
-                android:layout_weight="1"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btn_gettext"
-                android:text="文字识别"
-                android:textSize="12dp"
-                android:layout_weight="1" />
-            <Button
-                android:id="@+id/btn_trans"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="翻译"
-                android:textSize="12dp"/>
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/album"
+                android:background="#00000000"/>
+
+
         </LinearLayout>
     </LinearLayout>
-
-
 </LinearLayout>
+
+

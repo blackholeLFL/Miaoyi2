@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.media.ExifInterface;
@@ -37,6 +38,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -63,13 +66,11 @@ public class MainActivity extends Activity {
     public static final String APP_ID = "20180318000137277";
     public static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
     private static MainActivity mainActivity;
-//    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-    Button btn_openCamera;
-    Button btn_findText;
-    Button btn_getTxt;
-    Button btn_openAlbum;
-    Button btn_trans;
-    TextView txtget;
+    //    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+    ImageButton btn_openCamera;
+    ImageButton btn_openAlbum;
+
+    EditText txt;
     String wait_trans;//识别出的等待翻译的字符串
     FloatService floatService;
     DisplayMetrics dm;
@@ -77,8 +78,8 @@ public class MainActivity extends Activity {
     String filename;
     String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
 
-    String chinese="chi_sim.traineddata";
-    String english="eng_sim.traineddata";
+    String chinese = "chi_sim.traineddata";
+    String english = "eng_sim.traineddata";
     String Language = english;
 
     public static ShotUtils shotUtils;
@@ -96,9 +97,10 @@ public class MainActivity extends Activity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             myBinder = (FloatService.MyBinder) service;
-            floatService=myBinder.getService();
+            floatService = myBinder.getService();
         }
     };
+
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
@@ -110,24 +112,33 @@ public class MainActivity extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             wait_trans = floatService.GetTextFromRect();
-            txtget.setText(wait_trans);
+            //txtget.setText(wait_trans);
 
         }
     };
+
     private void bindServiceConnection() {
         Intent intent = new Intent(MainActivity.this, FloatService.class);
         startService(intent);
         bindService(intent, connection, this.BIND_AUTO_CREATE);
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //context = MainActivity.this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT >= 21) {
+            View decorView = getWindow().getDecorView();
+            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            decorView.setSystemUiVisibility(option);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
 
-        Log.i("onCreate","执行");
+        Log.i("onCreate", "执行");
 
-        filename = sdPath + "/test/tessdata/"+Language;
+        filename = sdPath + "/test/tessdata/" + Language;
         //手机中不存在训练文件，则在sd卡中写入对应的文件
         //应用首次运行，将训练文件拷贝到sd卡中
         SharedPreferences sp = getSharedPreferences("ocr_test", Context.MODE_PRIVATE);
@@ -143,15 +154,13 @@ public class MainActivity extends Activity {
             }
         }
         mainActivity = this;
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
-            if (Settings.canDrawOverlays(MainActivity.this))
-            {
-                Toast.makeText(MainActivity.this,"已开启Toucher", Toast.LENGTH_SHORT).show();
-            }else
-            {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(MainActivity.this)) {
+                Toast.makeText(MainActivity.this, "已开启Toucher", Toast.LENGTH_SHORT).show();
+            } else {
                 //若没有权限，提示获取.
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + PACKAGE_NAME));
-                Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + PACKAGE_NAME));
+                Toast.makeText(MainActivity.this, "需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
                 startActivity(intent);
             }
         }
@@ -166,19 +175,14 @@ public class MainActivity extends Activity {
         bindServiceConnection();
 
         btn_openCamera = findViewById(R.id.btn_openCamera);
-        btn_findText = findViewById(R.id.btn_findtext);
-        btn_getTxt = findViewById(R.id.btn_gettext);
         btn_openAlbum = findViewById(R.id.btn_openAlbum);
-        btn_trans = findViewById(R.id.btn_trans);
-//        ocrView = new OcrView(this);
-        txtget = findViewById(R.id.txt_get);
+        txt = findViewById(R.id.txt);
         threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
 
         btn_openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // handler.sendEmptyMessage(1);
-                txtget.setText("");
                 getImage("camera");
                 //context1getImageFromCamera(context1);
             }
@@ -186,7 +190,6 @@ public class MainActivity extends Activity {
         btn_openAlbum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                txtget.setText("");
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 } else {
@@ -194,14 +197,14 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        btn_findText.setOnClickListener(new View.OnClickListener() {
+/*        btn_findText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 floatService.createOcrView();
                 floatService.ocrView.SelectRect();
             }
-        });
-        btn_getTxt.setOnClickListener(new View.OnClickListener() {
+        });*/
+/*        btn_getTxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 txtget.setText("识别中，请稍等。");
@@ -214,9 +217,9 @@ public class MainActivity extends Activity {
                 threadPoolExecutor.execute(r);
 
             }
-        });
+        });*/
 
-        btn_trans.setOnClickListener(new View.OnClickListener() {
+/*        btn_trans.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new Thread(new Runnable() {
@@ -230,7 +233,7 @@ public class MainActivity extends Activity {
                 }).start();
 
             }
-        });
+        });*/
 
 
         RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
@@ -243,46 +246,43 @@ public class MainActivity extends Activity {
         // TextView tv = (TextView) findViewById(R.id.sample_text);
         // tv.setText(stringFromJNI());
 
-        Log.i("onCreate","执行完毕");
+        Log.i("onCreate", "执行完毕");
     }
-
 
 
     public static MainActivity getMainActivity() {
         return mainActivity;
     }
 
-    private void setText(final TextView text, final String value) {
+/*    private void setText(final TextView text, final String value) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 text.setText(value);
             }
         });
-    }
+    }*/
 
-    public void getPermisson(){
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
-            if (Settings.canDrawOverlays(MainActivity.this))
-            {
+    public void getPermisson() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(MainActivity.this)) {
                 try {
                     floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
-                }catch(Exception e){
+                } catch (Exception e) {
                     floatService.windowManager.removeView(floatService.OcrLayout);
                     floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
                 }
 
-            }else
-            {
+            } else {
                 //若没有权限，提示获取.
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
-                Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
-                startActivityForResult(intent,2);
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                Toast.makeText(MainActivity.this, "需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
+                startActivityForResult(intent, 2);
             }
-        }else{
+        } else {
             try {
                 floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
-            }catch(Exception e){
+            } catch (Exception e) {
                 floatService.windowManager.removeView(floatService.OcrLayout);
                 floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
             }
@@ -290,6 +290,7 @@ public class MainActivity extends Activity {
 
     }
 
+/*
 
     @TargetApi(19)
     private void handleImageOnKitKat(Intent data) {
@@ -312,7 +313,7 @@ public class MainActivity extends Activity {
         }
         try {
             floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.img_camera);
+            ImageView im_camera = findViewById(R.id.camera);
             im_camera.setImageBitmap(floatService.bmp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -331,6 +332,7 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
     }
+*/
 
 
     private void copyBigDataToSD(String strFileName) throws IOException {
@@ -339,7 +341,7 @@ public class MainActivity extends Activity {
         getExternalFilesDir(null).getAbsolutePath();
         File dir = new File(sdPath + File.separator + "test/tessdata/");
         dir.mkdirs();
-        File filea = new File(sdPath + File.separator + "test/tessdata/"+Language);
+        File filea = new File(sdPath + File.separator + "test/tessdata/" + Language);
 
         filea.createNewFile();
 
@@ -399,8 +401,8 @@ public class MainActivity extends Activity {
                 }
                 break;
             case 2:
-                Log.d("onRequest","2");
-                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
+                Log.d("onRequest", "2");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (!Settings.canDrawOverlays(this)) {
                         // SYSTEM_ALERT_WINDOW permission not granted...
                         Toast.makeText(MainActivity.this, "not granted", Toast.LENGTH_SHORT);
@@ -410,7 +412,7 @@ public class MainActivity extends Activity {
             default:
         }
     }
-
+/*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -448,7 +450,7 @@ public class MainActivity extends Activity {
         }
     }
 
-
+*/
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
