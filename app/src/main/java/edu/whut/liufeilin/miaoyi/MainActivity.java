@@ -34,6 +34,7 @@ import android.support.v4.content.FileProvider;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -57,12 +58,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import edu.whut.liufeilin.miaoyi.api.TransApi;
-import edu.whut.liufeilin.miaoyi.view.OcrView;
 
 
 public class MainActivity extends Activity {
-    //private static Context context;
+    private static Context mainContext;
     public static final String APP_ID = "20180318000137277";
     public static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
     private static MainActivity mainActivity;
@@ -106,7 +105,7 @@ public class MainActivity extends Activity {
         System.loadLibrary("native-lib");
     }
 
-    final Context context = this;
+    final  Context context = this;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -122,6 +121,7 @@ public class MainActivity extends Activity {
         startService(intent);
         bindService(intent, connection, this.BIND_AUTO_CREATE);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,6 +187,7 @@ public class MainActivity extends Activity {
                 //context1getImageFromCamera(context1);
             }
         });
+
         btn_openAlbum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -197,14 +198,15 @@ public class MainActivity extends Activity {
                 }
             }
         });
+
 /*        btn_findText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 floatService.createOcrView();
                 floatService.ocrView.SelectRect();
             }
-        });*/
-/*        btn_getTxt.setOnClickListener(new View.OnClickListener() {
+        });
+       btn_getTxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 txtget.setText("识别中，请稍等。");
@@ -217,9 +219,9 @@ public class MainActivity extends Activity {
                 threadPoolExecutor.execute(r);
 
             }
-        });*/
+        });
 
-/*        btn_trans.setOnClickListener(new View.OnClickListener() {
+       btn_trans.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new Thread(new Runnable() {
@@ -233,19 +235,12 @@ public class MainActivity extends Activity {
                 }).start();
 
             }
-        });*/
-
-
+        });
+        */
         RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
-//        addContentView(ocrView, p);
-
-        // Example of a call to a native method
-        // TextView tv = (TextView) findViewById(R.id.sample_text);
-        // tv.setText(stringFromJNI());
-
         Log.i("onCreate", "执行完毕");
     }
 
@@ -253,6 +248,7 @@ public class MainActivity extends Activity {
     public static MainActivity getMainActivity() {
         return mainActivity;
     }
+
 
 /*    private void setText(final TextView text, final String value) {
         runOnUiThread(new Runnable() {
@@ -290,7 +286,6 @@ public class MainActivity extends Activity {
 
     }
 
-/*
 
     @TargetApi(19)
     private void handleImageOnKitKat(Intent data) {
@@ -311,10 +306,14 @@ public class MainActivity extends Activity {
         } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             imagePath = uri.getPath();
         }
-        try {
-            floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.camera);
-            im_camera.setImageBitmap(floatService.bmp);
+        try {//
+            Intent it = new Intent(MainActivity.this, photoActivity.class);
+            Bundle bundle = new Bundle(); //该类用作携带数据
+            bundle.putString("path", imagePath);
+            bundle.putInt("code",2);
+            it.putExtras(bundle); //为Intent追加额外的数据
+            startActivity(it);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -324,15 +323,13 @@ public class MainActivity extends Activity {
     private void handleImageBeforeKitKat(Intent data) {
         Uri uri = data.getData();
         String imagePath = floatService.getImagePath(uri, null);
-        try {
-            floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.img_camera);
-            im_camera.setImageBitmap(floatService.bmp);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Intent it = new Intent(MainActivity.this, photoActivity.class);
+        Bundle bundle = new Bundle(); //该类用作携带数据
+        bundle.putString("path", imagePath);
+        bundle.putInt("code",2);
+        it.putExtras(bundle); //为Intent追加额外的数据
+        startActivity(it);
     }
-*/
 
 
     private void copyBigDataToSD(String strFileName) throws IOException {
@@ -386,9 +383,8 @@ public class MainActivity extends Activity {
             getImage.setType("image/*");
             startActivityForResult(getImage, 2);  //相册
         }
-
-
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -412,7 +408,8 @@ public class MainActivity extends Activity {
             default:
         }
     }
-/*
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -425,22 +422,28 @@ public class MainActivity extends Activity {
                 handleImageBeforeKitKat(data);
             }
         } else if (resultCode == Activity.RESULT_OK && requestCode == 1) {   //从相机选取图片
-            FileInputStream fis = null;
+            //FileInputStream fis = null;
             try {
-                fis = new FileInputStream(floatService.picPath);
-                floatService.bmp = null;
+                //fis = new FileInputStream(floatService.picPath);
+                Intent it = new Intent(MainActivity.this, photoActivity.class);
+                Bundle bundle = new Bundle(); //该类用作携带数据
+                bundle.putString("path", floatService.picPath);
+                bundle.putInt("code",1);
+                it.putExtras(bundle); //为Intent追加额外的数据
+                startActivity(it);
+/*              floatService.bmp = null;
                 floatService.bmp = floatService.FixImageOrientation(floatService.picPath, "camera");
                 ImageView im_camera = findViewById(R.id.img_camera);
-                im_camera.setImageBitmap(floatService.bmp);
+                im_camera.setImageBitmap(floatService.bmp);*/
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
+            } /*finally {
                 try {
                     fis.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
         } else if(requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION){
             Log.d("MainActivity","requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION");
 
@@ -450,7 +453,34 @@ public class MainActivity extends Activity {
         }
     }
 
-*/
+
+    public static Bitmap getScaleBitmap(Context ctx, String filePath) {
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
+        Bitmap bmp ;
+
+        int bmpWidth = opt.outWidth;
+        int bmpHeight = opt.outHeight;
+
+        WindowManager windowManager = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        int screenWidth = display.getWidth();
+        int screenHeight = display.getHeight();
+
+        opt.inSampleSize = 2;//尺寸缩小2/1
+        if (bmpWidth > bmpHeight) {
+            if (bmpWidth > screenWidth)
+                opt.inSampleSize = bmpWidth / screenWidth;
+        } else {
+            if (bmpHeight > screenHeight)
+                opt.inSampleSize = bmpHeight / screenHeight;
+        }
+        opt.inJustDecodeBounds = false;
+
+        bmp = BitmapFactory.decodeFile(filePath, opt);
+        return bmp;
+    }
+
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
