@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.media.ExifInterface;
@@ -33,10 +34,13 @@ import android.support.v4.content.FileProvider;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -54,22 +58,18 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import edu.whut.liufeilin.miaoyi.api.TransApi;
-import edu.whut.liufeilin.miaoyi.view.OcrView;
 
 
 public class MainActivity extends Activity {
-    //private static Context context;
+    private static Context mainContext;
     public static final String APP_ID = "20180318000137277";
     public static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
     private static MainActivity mainActivity;
-//    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-    Button btn_openCamera;
-    Button btn_findText;
-    Button btn_getTxt;
-    Button btn_openAlbum;
-    Button btn_trans;
-    TextView txtget;
+    //    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+    ImageButton btn_openCamera;
+    ImageButton btn_openAlbum;
+
+    EditText txt;
     String wait_trans;//识别出的等待翻译的字符串
     FloatService floatService;
     DisplayMetrics dm;
@@ -77,8 +77,8 @@ public class MainActivity extends Activity {
     String filename;
     String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
 
-    String chinese="chi_sim.traineddata";
-    String english="eng_sim.traineddata";
+    String chinese = "chi_sim.traineddata";
+    String english = "eng_sim.traineddata";
     String Language = english;
 
     public static ShotUtils shotUtils;
@@ -96,38 +96,49 @@ public class MainActivity extends Activity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             myBinder = (FloatService.MyBinder) service;
-            floatService=myBinder.getService();
+            floatService = myBinder.getService();
         }
     };
+
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
     }
 
-    final Context context = this;
+    final  Context context = this;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             wait_trans = floatService.GetTextFromRect();
-            txtget.setText(wait_trans);
+            //txtget.setText(wait_trans);
 
         }
     };
+
     private void bindServiceConnection() {
         Intent intent = new Intent(MainActivity.this, FloatService.class);
         startService(intent);
         bindService(intent, connection, this.BIND_AUTO_CREATE);
     }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //context = MainActivity.this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT >= 21) {
+            View decorView = getWindow().getDecorView();
+            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            decorView.setSystemUiVisibility(option);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
 
-        Log.i("onCreate","执行");
+        Log.i("onCreate", "执行");
 
-        filename = sdPath + "/test/tessdata/"+Language;
+        filename = sdPath + "/test/tessdata/" + Language;
         //手机中不存在训练文件，则在sd卡中写入对应的文件
         //应用首次运行，将训练文件拷贝到sd卡中
         SharedPreferences sp = getSharedPreferences("ocr_test", Context.MODE_PRIVATE);
@@ -143,15 +154,13 @@ public class MainActivity extends Activity {
             }
         }
         mainActivity = this;
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
-            if (Settings.canDrawOverlays(MainActivity.this))
-            {
-                Toast.makeText(MainActivity.this,"已开启Toucher", Toast.LENGTH_SHORT).show();
-            }else
-            {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(MainActivity.this)) {
+                Toast.makeText(MainActivity.this, "已开启Toucher", Toast.LENGTH_SHORT).show();
+            } else {
                 //若没有权限，提示获取.
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + PACKAGE_NAME));
-                Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + PACKAGE_NAME));
+                Toast.makeText(MainActivity.this, "需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
                 startActivity(intent);
             }
         }
@@ -166,27 +175,22 @@ public class MainActivity extends Activity {
         bindServiceConnection();
 
         btn_openCamera = findViewById(R.id.btn_openCamera);
-        btn_findText = findViewById(R.id.btn_findtext);
-        btn_getTxt = findViewById(R.id.btn_gettext);
         btn_openAlbum = findViewById(R.id.btn_openAlbum);
-        btn_trans = findViewById(R.id.btn_trans);
-//        ocrView = new OcrView(this);
-        txtget = findViewById(R.id.txt_get);
+        txt = findViewById(R.id.txt);
         threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
 
         btn_openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // handler.sendEmptyMessage(1);
-                txtget.setText("");
                 getImage("camera");
                 //context1getImageFromCamera(context1);
             }
         });
+
         btn_openAlbum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                txtget.setText("");
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 } else {
@@ -194,14 +198,15 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        btn_findText.setOnClickListener(new View.OnClickListener() {
+
+/*        btn_findText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 floatService.createOcrView();
                 floatService.ocrView.SelectRect();
             }
         });
-        btn_getTxt.setOnClickListener(new View.OnClickListener() {
+       btn_getTxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 txtget.setText("识别中，请稍等。");
@@ -216,7 +221,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        btn_trans.setOnClickListener(new View.OnClickListener() {
+       btn_trans.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new Thread(new Runnable() {
@@ -231,58 +236,49 @@ public class MainActivity extends Activity {
 
             }
         });
-
-
+        */
         RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT
         );
-//        addContentView(ocrView, p);
-
-        // Example of a call to a native method
-        // TextView tv = (TextView) findViewById(R.id.sample_text);
-        // tv.setText(stringFromJNI());
-
-        Log.i("onCreate","执行完毕");
+        Log.i("onCreate", "执行完毕");
     }
-
 
 
     public static MainActivity getMainActivity() {
         return mainActivity;
     }
 
-    private void setText(final TextView text, final String value) {
+
+/*    private void setText(final TextView text, final String value) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 text.setText(value);
             }
         });
-    }
+    }*/
 
-    public void getPermisson(){
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
-            if (Settings.canDrawOverlays(MainActivity.this))
-            {
+    public void getPermisson() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(MainActivity.this)) {
                 try {
                     floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
-                }catch(Exception e){
+                } catch (Exception e) {
                     floatService.windowManager.removeView(floatService.OcrLayout);
                     floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
                 }
 
-            }else
-            {
+            } else {
                 //若没有权限，提示获取.
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:" + getPackageName()));
-                Toast.makeText(MainActivity.this,"需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
-                startActivityForResult(intent,2);
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                Toast.makeText(MainActivity.this, "需要取得权限以使用悬浮窗", Toast.LENGTH_SHORT).show();
+                startActivityForResult(intent, 2);
             }
-        }else{
+        } else {
             try {
                 floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
-            }catch(Exception e){
+            } catch (Exception e) {
                 floatService.windowManager.removeView(floatService.OcrLayout);
                 floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
             }
@@ -310,10 +306,14 @@ public class MainActivity extends Activity {
         } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             imagePath = uri.getPath();
         }
-        try {
-            floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.img_camera);
-            im_camera.setImageBitmap(floatService.bmp);
+        try {//
+            Intent it = new Intent(MainActivity.this, photoActivity.class);
+            Bundle bundle = new Bundle(); //该类用作携带数据
+            bundle.putString("path", imagePath);
+            bundle.putInt("code",2);
+            it.putExtras(bundle); //为Intent追加额外的数据
+            startActivity(it);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -323,13 +323,12 @@ public class MainActivity extends Activity {
     private void handleImageBeforeKitKat(Intent data) {
         Uri uri = data.getData();
         String imagePath = floatService.getImagePath(uri, null);
-        try {
-            floatService.bmp = floatService.FixImageOrientation(imagePath, "album");
-            ImageView im_camera = findViewById(R.id.img_camera);
-            im_camera.setImageBitmap(floatService.bmp);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Intent it = new Intent(MainActivity.this, photoActivity.class);
+        Bundle bundle = new Bundle(); //该类用作携带数据
+        bundle.putString("path", imagePath);
+        bundle.putInt("code",2);
+        it.putExtras(bundle); //为Intent追加额外的数据
+        startActivity(it);
     }
 
 
@@ -339,7 +338,7 @@ public class MainActivity extends Activity {
         getExternalFilesDir(null).getAbsolutePath();
         File dir = new File(sdPath + File.separator + "test/tessdata/");
         dir.mkdirs();
-        File filea = new File(sdPath + File.separator + "test/tessdata/"+Language);
+        File filea = new File(sdPath + File.separator + "test/tessdata/" + Language);
 
         filea.createNewFile();
 
@@ -384,9 +383,8 @@ public class MainActivity extends Activity {
             getImage.setType("image/*");
             startActivityForResult(getImage, 2);  //相册
         }
-
-
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -399,8 +397,8 @@ public class MainActivity extends Activity {
                 }
                 break;
             case 2:
-                Log.d("onRequest","2");
-                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
+                Log.d("onRequest", "2");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (!Settings.canDrawOverlays(this)) {
                         // SYSTEM_ALERT_WINDOW permission not granted...
                         Toast.makeText(MainActivity.this, "not granted", Toast.LENGTH_SHORT);
@@ -410,6 +408,7 @@ public class MainActivity extends Activity {
             default:
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -423,22 +422,28 @@ public class MainActivity extends Activity {
                 handleImageBeforeKitKat(data);
             }
         } else if (resultCode == Activity.RESULT_OK && requestCode == 1) {   //从相机选取图片
-            FileInputStream fis = null;
+            //FileInputStream fis = null;
             try {
-                fis = new FileInputStream(floatService.picPath);
-                floatService.bmp = null;
+                //fis = new FileInputStream(floatService.picPath);
+                Intent it = new Intent(MainActivity.this, photoActivity.class);
+                Bundle bundle = new Bundle(); //该类用作携带数据
+                bundle.putString("path", floatService.picPath);
+                bundle.putInt("code",1);
+                it.putExtras(bundle); //为Intent追加额外的数据
+                startActivity(it);
+/*              floatService.bmp = null;
                 floatService.bmp = floatService.FixImageOrientation(floatService.picPath, "camera");
                 ImageView im_camera = findViewById(R.id.img_camera);
-                im_camera.setImageBitmap(floatService.bmp);
+                im_camera.setImageBitmap(floatService.bmp);*/
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
+            } /*finally {
                 try {
                     fis.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
         } else if(requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION){
             Log.d("MainActivity","requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION");
 
@@ -448,6 +453,33 @@ public class MainActivity extends Activity {
         }
     }
 
+
+    public static Bitmap getScaleBitmap(Context ctx, String filePath) {
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
+        Bitmap bmp ;
+
+        int bmpWidth = opt.outWidth;
+        int bmpHeight = opt.outHeight;
+
+        WindowManager windowManager = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        int screenWidth = display.getWidth();
+        int screenHeight = display.getHeight();
+
+        opt.inSampleSize = 2;//尺寸缩小2/1
+        if (bmpWidth > bmpHeight) {
+            if (bmpWidth > screenWidth)
+                opt.inSampleSize = bmpWidth / screenWidth;
+        } else {
+            if (bmpHeight > screenHeight)
+                opt.inSampleSize = bmpHeight / screenHeight;
+        }
+        opt.inJustDecodeBounds = false;
+
+        bmp = BitmapFactory.decodeFile(filePath, opt);
+        return bmp;
+    }
 
 
     /**

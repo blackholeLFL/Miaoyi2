@@ -74,7 +74,6 @@ public class ShotUtils {
         Handler handler1 = new Handler();
         handler1.postDelayed(new Runnable() {
             public void run() {
-
                 startVirtual();
             }
         }, 5);

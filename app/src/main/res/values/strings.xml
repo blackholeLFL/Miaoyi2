@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">秒译</string>
+    <string name="title_activity_photo">photoActivity</string>
 </resources>
