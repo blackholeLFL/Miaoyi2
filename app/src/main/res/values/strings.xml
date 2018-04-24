@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">秒译</string>
     <string name="title_activity_photo">photoActivity</string>
+    <string name="title_activity_settings">settingActivity</string>
+    <string-array name="langs">
+        <item>English</item>
+        <item>Chinese</item>
+        <item>Japanese</item>
+    </string-array>
+    <string-array name="language">
+        <item>eng_sim</item>
+        <item>chi_sim</item>
+        <item>jpn</item>
+    </string-array>
+
 </resources>

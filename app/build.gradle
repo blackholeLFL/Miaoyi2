@@ -14,6 +14,7 @@ android {
                 cppFlags ""
             }
         }
+        vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
@@ -31,6 +32,8 @@ android {
 
 dependencies {
     implementation 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:support-vector-drawable:26.1.0'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'

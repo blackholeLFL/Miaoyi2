@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="设置">
+        <!--android:widgetLayout  修改Preference里的子布局-->
+        <!--android:layout 修改Preference的布局-->
+        <Preference
+            android:icon="@mipmap/ic_launcher_round"
+            android:summary="基于OCR的文字识别翻译软件"
+            android:title="秒译">
+        </Preference>
+    </PreferenceCategory>
+    <!--嵌套PreferenceScreen 会再打开一个子屏幕-->
+    <!--可以使用extra给intent标签加参数来传递参数实现意图 会再打开一个子屏-->
+<!--    <PreferenceScreen
+        android:summary="Open the Web (Preference)"
+        android:title="嵌套PreferenceScreen Open the Web ">
+        <Preference
+            android:title="Open the Web (Preference)"
+            >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="http://www.hao123.com"/>
+
+        </Preference>
+    </PreferenceScreen>-->
+
+
+    <ListPreference
+        android:key="language"
+        android:title="识别语言"
+        android:summary="%s"
+        android:dialogTitle="请选择目标语言"
+        android:entries="@array/langs"
+        android:entryValues="@array/language"
+        android:defaultValue="eng_sim"/>
+    <!--android:order 首选项的顺序(较低的值在前面)-->
+<!--    <EditTextPreference
+        android:key="key_EditTextPreference"
+        android:order="1"
+        android:summary="EditTextPreference 输入框"
+        android:title="EditTextPreference"/>-->
+<!--    <Preference
+        android:key="key_Preference"
+        android:summary="please Click me"
+        android:title="Preference Click Test"
+        />-->
+
+</PreferenceScreen>
