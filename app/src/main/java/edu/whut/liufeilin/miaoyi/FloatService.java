@@ -83,7 +83,7 @@ public class FloatService extends Service {
     TextView textView;
     ShotUtils shotUtils = MainActivity.shotUtils;
     String result;
-    String language = "jpn_sim";
+    String Language ;
 
     ThreadPoolExecutor threadPoolExecutor;
     TessBaseAPI mTess;
@@ -118,7 +118,10 @@ public class FloatService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand() executed");
-        initTessBaseData();
+        Bundle bundle = intent.getExtras();
+        Language = bundle.getString("language");
+        Log.e(TAG, " "+Language);
+        initTessBaseData(Language);
         createToucher();
         threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
 
@@ -150,16 +153,17 @@ public class FloatService extends Service {
     }
 
 
-    public void initTessBaseData() {
-    /*初始化Tess*/
+    public void initTessBaseData(String language) {
+        /*初始化Tess*/
+        Language=language;
         mTess = new TessBaseAPI();
         String datapath = sdPath + "/test/";
         Log.d("datapath", datapath);
-//        String language = "chi_sim";
         File dir = new File(datapath + "tessdata/");
         if (!dir.exists())
             dir.mkdirs();
-        mTess.init(datapath, language);
+        mTess.init(datapath, Language);
+
     }
 
 
@@ -176,14 +180,16 @@ public class FloatService extends Service {
     }
 
     /*
-        public InputStream Bitmap2InputStream(Bitmap bm) {
+    public InputStream Bitmap2InputStream(Bitmap bm) {
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            InputStream is = new ByteArrayInputStream(baos.toByteArray());
-            return is;
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        InputStream is = new ByteArrayInputStream(baos.toByteArray());
+        return is;
+    }
+
     */
+    /*
     public Bitmap FixImageOrientation(Bitmap bitmap) throws IOException {
         //检验图片地址是否正确
 
@@ -208,9 +214,9 @@ public class FloatService extends Service {
         return bitmap;
 
     }
+*/
 
-
-    public Bitmap FixImageOrientation(String imagePath,int option) throws IOException {
+    public Bitmap FixImageOrientation(String imagePath, int option) throws IOException {
         //检验图片地址是否正确
         if (imagePath == null || imagePath.equals(""))
             return null;
@@ -224,9 +230,9 @@ public class FloatService extends Service {
             bitmap=BitmapFactory.decodeFile(imagePath, options);
         }*/
         BitmapFactory.Options options = new BitmapFactory.Options();
-        if (option==1) {
+        if (option == 1) {
             options.inSampleSize = 2;    //调整图片为原来的1/2
-        } else if (option==2) {
+        } else if (option == 2) {
             options.inSampleSize = 1;
         }
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
@@ -318,22 +324,6 @@ public class FloatService extends Service {
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-/*
-        ocrView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                Log.d("ocrView","监听到按键点击事件");
-                if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_BACK
-                        || keyEvent.getKeyCode() == KeyEvent.KEYCODE_SETTINGS) {
-
-                    ocrView.StopSelect();
-                    windowManager.removeView(OcrLayout);
-                }
-                return false;
-            }
-        });
-        ocrView.setFocusable(true);
-*/
         ocrView.setOnClickListener(new View.OnClickListener() {
             long[] hints = new long[2];
 
@@ -350,7 +340,12 @@ public class FloatService extends Service {
                         public void run() {
                             result = Screen_GetTextFromRect();
                             TransApi api = new TransApi(MainActivity.APP_ID, MainActivity.SECURITY_KEY);
-                            result = result + "\n" + api.getTransResult(result, "auto", "zh");
+                            if(Language.equals("chi_sim")){
+                                result = result + "\n" + api.getTransResult(result, "zh", "en");
+                            }
+                            else{
+                                result = result + "\n" + api.getTransResult(result, "auto", "zh");
+                            }
                             result = "结果为：" + result;
                             Message msg = new Message();
                             Bundle data = new Bundle();
@@ -489,7 +484,7 @@ public class FloatService extends Service {
 
     }
 
-
+/*
     public void saveMyBitmap(Bitmap bitmap) {
         File f = new File(picPath);
         try {
@@ -520,7 +515,7 @@ public class FloatService extends Service {
         }
     }
 
-
+*/
     public String Screen_GetTextFromRect() {
         mTess.clear();
         if (bmp == null) return null;
@@ -537,7 +532,7 @@ public class FloatService extends Service {
         return result;
     }
 
-
+/*
     public String GetTextFromRect() {
         mTess.clear();
         if (bmp == null) return null;
@@ -563,4 +558,6 @@ public class FloatService extends Service {
         }
         return result;
     }
+*/
+
 }
