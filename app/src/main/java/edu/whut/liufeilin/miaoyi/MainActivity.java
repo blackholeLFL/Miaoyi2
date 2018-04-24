@@ -79,7 +79,8 @@ public class MainActivity extends Activity {
 
     String chinese = "chi_sim.traineddata";
     String english = "eng_sim.traineddata";
-    String Language = english;
+    String japenese = "jpn_sim.traineddata";
+    String Language = japenese;
 
     public static ShotUtils shotUtils;
     public static int ScreenHeight;

@@ -33,6 +33,7 @@ import android.support.v4.content.FileProvider;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -82,7 +83,7 @@ public class FloatService extends Service {
     TextView textView;
     ShotUtils shotUtils = MainActivity.shotUtils;
     String result;
-    String language = "eng_sim";
+    String language = "jpn_sim";
 
     ThreadPoolExecutor threadPoolExecutor;
     TessBaseAPI mTess;
@@ -288,7 +289,7 @@ public class FloatService extends Service {
     public void createOcrView() {
         Log.d("createOcrView", "已执行");
         params1 = new WindowManager.LayoutParams();
-//        params1.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+//        params1.flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             params1.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
@@ -317,6 +318,22 @@ public class FloatService extends Service {
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+/*
+        ocrView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                Log.d("ocrView","监听到按键点击事件");
+                if(keyEvent.getKeyCode() == KeyEvent.KEYCODE_BACK
+                        || keyEvent.getKeyCode() == KeyEvent.KEYCODE_SETTINGS) {
+
+                    ocrView.StopSelect();
+                    windowManager.removeView(OcrLayout);
+                }
+                return false;
+            }
+        });
+        ocrView.setFocusable(true);
+*/
         ocrView.setOnClickListener(new View.OnClickListener() {
             long[] hints = new long[2];
 
@@ -326,6 +343,7 @@ public class FloatService extends Service {
                 System.arraycopy(hints, 1, hints, 0, hints.length - 1);
                 hints[hints.length - 1] = SystemClock.uptimeMillis();
                 if (SystemClock.uptimeMillis() - hints[0] < 700) {
+                    ocrView.StopSelect();
                     textView.setText("识别中，请稍等。");
                     Runnable r = new Runnable() {
                         @Override
