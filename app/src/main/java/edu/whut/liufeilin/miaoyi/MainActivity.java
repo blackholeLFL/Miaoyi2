@@ -4,8 +4,6 @@ package edu.whut.liufeilin.miaoyi;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
@@ -18,8 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
-import android.preference.ListPreference;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -34,8 +30,10 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -47,54 +45,30 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import edu.whut.liufeilin.miaoyi.fragment.settingFragment;
-
 
 public class MainActivity extends AppCompatActivity {
-    //private static Context mainContext;
     public static final String APP_ID = "20180318000137277";
     public static final String SECURITY_KEY = "tYo5nggG_R95EtuJvX0i";
     private static MainActivity mainActivity;
-    //    String sdCardRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-    private ImageButton btn_openCamera;
-    private ImageButton btn_openAlbum;
-    private ImageButton setting_button;
-    private SharedPreferences mSharedPreferences;
-
-    EditText txt;
-    //String wait_trans;//识别出的等待翻译的字符串
+    private EditText txt;
+    private int toucher_size;
     public static FloatService floatService;
-    DisplayMetrics dm;
-    ThreadPoolExecutor threadPoolExecutor;//线程池
-    // String filename;
-    String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
-
-    String Language;
-    String[] languages = {"eng_sim.traineddata", "chi_sim.traineddata", "jpn.traineddata"};
-
+    private DisplayMetrics dm;
+    private final String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
+    private String Language;
+    private final String[] languages = {"eng_sim.traineddata", "chi_sim.traineddata", "jpn.traineddata"};
+    private int float_flag=0;
     public static ShotUtils shotUtils;
     public static int ScreenHeight;
     public static int ScreenWidth;
-    public static String PACKAGE_NAME = "edu.whut.liufeilin.miaoyi";
+    public static final String PACKAGE_NAME = "edu.whut.liufeilin.miaoyi";
 
-    // Used to load the 'native-lib' library on application startup.
+
     static {
         System.loadLibrary("native-lib");
-    }
+    }// Used to load the 'native-lib' library on application startup.
 
 
-/*
-   final  Context context = this;
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            wait_trans = floatService.GetTextFromRect();
-            //txtget.setText(wait_trans);
-
-        }
-    };
-    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,9 +86,8 @@ public class MainActivity extends AppCompatActivity {
         Log.e("onCreate", "执行");
 
         PreferenceManager.setDefaultValues(this, R.xml.preference, false);
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Language = mSharedPreferences.getString("language", "");
-
 
         //filename = sdPath + "/test/tessdata/" + Language + ".traineddata";
         //手机中不存在训练文件，则在sd卡中写入对应的文件
@@ -147,11 +120,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        btn_openCamera = findViewById(R.id.btn_openCamera);
-        btn_openAlbum = findViewById(R.id.btn_openAlbum);
-        setting_button = findViewById(R.id.setting);
+        ImageButton btn_openCamera = findViewById(R.id.btn_openCamera);
+        ImageButton btn_openAlbum = findViewById(R.id.btn_openAlbum);
+        ImageButton setting_button = findViewById(R.id.setting);
+        final Button btn_float = findViewById(R.id.float_button);
         txt = findViewById(R.id.txt);
-        threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
+        //threadPoolExecutor = new ThreadPoolExecutor(3, 6, 2, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));
 
         btn_openCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,27 +155,51 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-/*        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-        );*/
+
+
         dm = getResources().getDisplayMetrics();
         ScreenHeight = dm.heightPixels;
         ScreenWidth = dm.widthPixels;
         shotUtils = new ShotUtils(getApplicationContext());
         shotUtils.init(MainActivity.this);
-
         floatService = new FloatService();
+
         bindServiceConnection();
+        toucher_size=Integer.parseInt(mSharedPreferences.getString("touch_size", "0"));
+        btn_float.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(float_flag==0){
+                    floatService.Toucher_size=toucher_size;
+                    floatService.createToucher();
+                    float_flag=1;
+                    //Log.e("flag","open"+float_flag+"size"+floatService.Toucher_size);
+                    btn_float.setText("关闭悬浮窗");
+                }
+                else if(float_flag==1){
+                    floatService.hidePopupWindow();
+                    float_flag=0;
+                    //Log.e("flag","ff"+float_flag);
+                    btn_float.setText("开启悬浮窗");
+                }
+
+            }
+        });
+
+        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
 
         Log.e("onCreate", "执行完毕");
     }
 
 
-    FloatService.MyBinder myBinder;
+
+    private FloatService.MyBinder myBinder;
 
 
-    private ServiceConnection connection = new ServiceConnection() {
+    private final ServiceConnection connection = new ServiceConnection() {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
@@ -215,18 +213,18 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
+
     private void bindServiceConnection() {
         Intent intent = new Intent(MainActivity.this, FloatService.class);
         intent.putExtra("language", Language);
         startService(intent);
-        bindService(intent, connection, this.BIND_AUTO_CREATE);
+        bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
 
     public static MainActivity getMainActivity() {
         return mainActivity;
     }
-
 
 
     public void getPermisson() {
@@ -249,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
             } catch (Exception e) {
+
                 floatService.windowManager.removeView(floatService.OcrLayout);
                 floatService.windowManager.addView(floatService.OcrLayout, floatService.params1);
             }
@@ -327,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    protected void getImage(String source) {
+    private void getImage(String source) {
     /*
     得到高质量照片
      */
@@ -383,8 +382,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("MainActivity", String.valueOf(requestCode));
-
+        //Log.d("MainActivity", String.valueOf(requestCode));
         if (resultCode == Activity.RESULT_OK && requestCode == 2) {  //从相册选取图片
             if (Build.VERSION.SDK_INT >= 19) {
                 handleImageOnKitKat(data);
@@ -392,37 +390,23 @@ public class MainActivity extends AppCompatActivity {
                 handleImageBeforeKitKat(data);
             }
         } else if (resultCode == Activity.RESULT_OK && requestCode == 1) {   //从相机选取图片
-            //FileInputStream fis = null;
             try {
-                //fis = new FileInputStream(floatService.picPath);
                 Intent it = new Intent(MainActivity.this, photoActivity.class);
                 Bundle bundle = new Bundle(); //该类用作携带数据
                 bundle.putString("path", floatService.picPath);
                 bundle.putInt("code", 1);
                 it.putExtras(bundle); //为Intent追加额外的数据
                 startActivity(it);
-/*              floatService.bmp = null;
-                floatService.bmp = floatService.FixImageOrientation(floatService.picPath, "camera");
-                ImageView im_camera = findViewById(R.id.img_camera);
-                im_camera.setImageBitmap(floatService.bmp);*/
             } catch (Exception e) {
                 e.printStackTrace();
-            } /*finally {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }*/
+            }
         } else if (requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION) {
-            Log.d("MainActivity", "requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION");
-
+            //Log.d("MainActivity", "requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION");
             floatService.shotUtils.setData(data);
         } else {
-            // Toast.makeText(this,"没有拍到照片",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"没有拍到照片",Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
     @Override
@@ -432,6 +416,13 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(connection);
     }
 
     /**

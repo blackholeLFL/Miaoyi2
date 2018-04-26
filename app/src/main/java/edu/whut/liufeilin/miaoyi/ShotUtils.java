@@ -29,7 +29,7 @@ import java.nio.ByteBuffer;
 public class ShotUtils {
 
     public static final int REQUEST_MEDIA_PROJECTION = 3 ;
-    private Context mContext;
+    private final Context mContext;
     private ImageReader mImageReader;
     private static Intent mResultData = null;
     private MediaProjection mMediaProjection;
@@ -43,7 +43,7 @@ public class ShotUtils {
     }
 
     public void setData(Intent mResultData){
-        this.mResultData = mResultData;
+        ShotUtils.mResultData = mResultData;
     }
 
     public void init(Activity mActivity){
@@ -87,7 +87,7 @@ public class ShotUtils {
 
     }
 
-    public void startVirtual() {
+    private void startVirtual() {
         Log.d("startVirtual","执行");
         if (mMediaProjection != null) {
             virtualDisplay();
@@ -104,7 +104,7 @@ public class ShotUtils {
         mVirtualDisplay = mMediaProjection.createVirtualDisplay("screen-mirror", getScreenWidth(), getScreenHeight(), getScreenDpi(), DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mImageReader.getSurface(), null, null);
     }
 
-    public void setUpMediaProjection() {
+    private void setUpMediaProjection() {
         Log.d("setUpMediaProjection","执行");
 
         if (mResultData == null) {
@@ -128,7 +128,7 @@ public class ShotUtils {
         return (MediaProjectionManager) mContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     }
 
-    public void startCapture(ShotListener mShotListener) {
+    private void startCapture(ShotListener mShotListener) {
         Log.d("startCapture","执行");
         Image image = mImageReader.acquireNextImage();
         if (image == null) {
@@ -165,7 +165,7 @@ public class ShotUtils {
         return bitmap;
     }
 
-    public void stopVirtual() {
+    private void stopVirtual() {
         if (mVirtualDisplay == null) {
             return;
         }

@@ -6,10 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -20,12 +18,11 @@ import android.view.View;
 public class OcrView extends View {
     //    声明Paint对象
     private Paint mPaint = null;
-    private int StrokeWidth = 5;
+    private final int StrokeWidth = 5;
     private boolean IsUsed = false;
     private int startX,endX,startY,endY,downX,downY;
     private RectF ltVer,rtVer,lbVer,rbVer;
-    private int vertexWidth = 30;
-    private int BUTTON_EXTRA_WIDTH = 10;
+    private final int BUTTON_EXTRA_WIDTH = 10;
     private int adjustNum = 0;
     private boolean isAdjustMode = false;
     private boolean isMoveMode = false;
@@ -53,6 +50,8 @@ public class OcrView extends View {
         rbVer=new RectF();
         rect = new Rect(0, 0, 0, 0);
     }
+
+
     private void reset(){
         ltVer=new RectF();
         rtVer=new RectF();
@@ -178,21 +177,15 @@ public class OcrView extends View {
 
     private boolean isAreaContainPoint(Rect area,int x,int y){
         Rect newArea=new Rect(area.left-BUTTON_EXTRA_WIDTH,area.top-BUTTON_EXTRA_WIDTH,area.right+BUTTON_EXTRA_WIDTH,area.bottom+BUTTON_EXTRA_WIDTH);
-        if (newArea.contains(x,y)){
-            return true;
-        }
-        return false;
+        return newArea.contains(x, y);
     }
     private boolean isAreaContainPoint(RectF area,int x,int y){
         RectF newArea=new RectF(area.left-BUTTON_EXTRA_WIDTH,area.top-BUTTON_EXTRA_WIDTH,area.right+BUTTON_EXTRA_WIDTH,area.bottom+BUTTON_EXTRA_WIDTH);
-        if (newArea.contains(x,y)){
-            return true;
-        }
-        return false;
+        return newArea.contains(x, y);
     }
 
 
-    public void adjustRect(int x,int y){
+    private void adjustRect(int x, int y){
         if (isAdjustMode){
             int moveMentX = x-downX;
             int moveMentY = y-downY;
@@ -234,6 +227,7 @@ public class OcrView extends View {
             endY = y;
         }
         rect.set(Math.min(startX,endX),Math.min(startY,endY),Math.max(startX, endX), Math.max(startY, endY));
+        int vertexWidth = 30;
         ltVer.set(rect.left - vertexWidth / 2, rect.top - vertexWidth / 2, rect.left + vertexWidth / 2, rect.top + vertexWidth / 2);
         rtVer.set(rect.right - vertexWidth / 2, rect.top - vertexWidth / 2, rect.right + vertexWidth / 2, rect.top + vertexWidth / 2);
         lbVer.set(rect.left - vertexWidth / 2, rect.bottom - vertexWidth / 2, rect.left + vertexWidth / 2, rect.bottom + vertexWidth / 2);

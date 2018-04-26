@@ -13,4 +13,15 @@
         <item>jpn</item>
     </string-array>
 
+    <string-array name="size">
+        <item>500*500</item>
+        <item>720*300</item>
+        <item>1080*300</item>
+    </string-array>
+    <string-array name="size_num">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
 </resources>

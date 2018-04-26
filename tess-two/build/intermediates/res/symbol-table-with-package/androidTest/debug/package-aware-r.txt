@@ -1,1 +1,0 @@
-com.googlecode.tesseract.android.test

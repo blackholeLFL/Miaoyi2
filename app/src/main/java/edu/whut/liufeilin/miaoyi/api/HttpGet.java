@@ -30,8 +30,8 @@ import javax.net.ssl.X509TrustManager;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 class HttpGet {
-    protected static final int SOCKET_TIMEOUT = 8000; // 8S
-    protected static final String GET = "GET";
+    private static final int SOCKET_TIMEOUT = 8000; // 8S
+    private static final String GET = "GET";
 
     public static String get(String host, Map<String, String> params) {
         try {
@@ -111,7 +111,7 @@ class HttpGet {
 
 
 
-    public static String getUrlWithQueryString(String url, Map<String, String> params) {
+    private static String getUrlWithQueryString(String url, Map<String, String> params) {
         if (params == null) {
             return url;
         }
@@ -144,7 +144,7 @@ class HttpGet {
         return builder.toString();
     }
 
-    protected static void close(Closeable closeable) {
+    private static void close(Closeable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -160,7 +160,7 @@ class HttpGet {
      * @param input 原文
      * @return URL编码. 如果编码失败, 则返回原文
      */
-    public static String encode(String input) {
+    private static String encode(String input) {
         if (input == null) {
             return "";
         }
@@ -174,7 +174,7 @@ class HttpGet {
         return input;
     }
 
-    private static TrustManager myX509TrustManager = new X509TrustManager() {
+    private static final TrustManager myX509TrustManager = new X509TrustManager() {
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg"
@@ -11,7 +10,7 @@
         android:layout_height="30dp"
         android:scaleType="fitXY"
         android:src="@drawable/setting"
-        android:layout_gravity="right"
+        android:layout_gravity="end"
         android:layout_marginTop="30dp"
         android:layout_marginRight="12dp"
         android:background="#00000000"/>
@@ -40,7 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
-        android:orientation="horizontal">
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -51,27 +51,39 @@
                 android:id="@+id/txt"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/shape_textarea"
-                android:layout_marginLeft="10dp"/>
+                android:hint=" "
+                android:maxLines="3"/>
 
             <ImageButton
                 android:id="@+id/btn_openCamera"
                 android:layout_width="35dp"
                 android:layout_height="35dp"
+                android:background="#00000000"
                 android:scaleType="fitXY"
-                android:src="@drawable/camera"
-                android:background="#00000000"/>
+                android:src="@drawable/camera" />
 
             <ImageButton
                 android:id="@+id/btn_openAlbum"
                 android:layout_width="35dp"
                 android:layout_height="35dp"
+                android:background="#00000000"
                 android:scaleType="fitXY"
-                android:src="@drawable/album"
-                android:background="#00000000"/>
+                android:src="@drawable/album" />
+
         </LinearLayout>
 
+        <Button
+            android:id="@+id/float_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_weight="0"
+            android:background="#80ffffff"
+            android:gravity="center_vertical|center"
+            android:text="开启悬浮窗" />
 
 
     </LinearLayout>

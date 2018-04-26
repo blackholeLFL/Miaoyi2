@@ -15,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
  * @author wangjingtao
  * 
  */
-public class MD5 {
+class MD5 {
     // 首先初始化一个字符数组，用来存放每个16进制字符
     private static final char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
             'e', 'f' };
@@ -50,52 +50,20 @@ public class MD5 {
         }
     }
 
-    /**
-     * 获取文件的MD5值
-     * 
-     * @param file
-     * @return
-     */
-    public static String md5(File file) {
-        try {
-            if (!file.isFile()) {
-                System.err.println("文件" + file.getAbsolutePath() + "不存在或者不是文件");
-                return null;
-            }
-
-            FileInputStream in = new FileInputStream(file);
-
-            String result = md5(in);
-
-            in.close();
-
-            return result;
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static String md5(InputStream in) {
+    private static String md5(InputStream in) {
 
         try {
             MessageDigest messagedigest = MessageDigest.getInstance("MD5");
 
             byte[] buffer = new byte[1024];
-            int read = 0;
+            int read ;
             while ((read = in.read(buffer)) != -1) {
                 messagedigest.update(buffer, 0, read);
             }
 
             in.close();
 
-            String result = byteArrayToHex(messagedigest.digest());
-
-            return result;
+            return byteArrayToHex(messagedigest.digest());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {

@@ -1,14 +1,8 @@
 package edu.whut.liufeilin.miaoyi;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.preference.ListPreference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -21,8 +15,9 @@ import edu.whut.liufeilin.miaoyi.fragment.settingFragment;
 
 
 public class settingActivity extends Activity {
-    String Language;
-    FloatService floatService=MainActivity.floatService;
+    private String Language;
+    private int size;
+    private final FloatService floatService=MainActivity.floatService;
 
 
     @Override
@@ -34,13 +29,26 @@ public class settingActivity extends Activity {
                 .commit();
     }
 
-    private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener =
+    private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener =
             new SharedPreferences.OnSharedPreferenceChangeListener() {
         public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
             if(key.equals("language")){
                 Language = prefs.getString("language", "");
-                Log.e("settingActivity", " " + Language);
+                //Log.e("settingActivity", " " + Language);
                 floatService.initTessBaseData(Language);
+            }
+            else if(key.equals("touch_size")){
+                size = Integer.parseInt(prefs.getString("touch_size", "0"));
+                //Log.e("settingActivity size" , " " + size);
+                if(floatService.getTouchStatus()==0){
+                    floatService.setToucher_size(size);
+                    //Log.e("setting.windowManager" , "null");
+                }
+                else {
+                    floatService.setToucher_size(size);
+                    floatService.hidePopupWindow();
+                    floatService.createToucher();
+                }
             }
         }
     };
@@ -57,7 +65,5 @@ public class settingActivity extends Activity {
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         super.onPause();
     }
-
-
 
 }

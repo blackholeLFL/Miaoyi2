@@ -9,21 +9,10 @@
             android:summary="基于OCR的文字识别翻译软件"
             android:title="秒译">
         </Preference>
-    </PreferenceCategory>
-    <!--嵌套PreferenceScreen 会再打开一个子屏幕-->
-    <!--可以使用extra给intent标签加参数来传递参数实现意图 会再打开一个子屏-->
-<!--    <PreferenceScreen
-        android:summary="Open the Web (Preference)"
-        android:title="嵌套PreferenceScreen Open the Web ">
-        <Preference
-            android:title="Open the Web (Preference)"
-            >
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="http://www.hao123.com"/>
 
-        </Preference>
-    </PreferenceScreen>-->
+
+    </PreferenceCategory>
+
 
 
     <ListPreference
@@ -34,16 +23,15 @@
         android:entries="@array/langs"
         android:entryValues="@array/language"
         android:defaultValue="eng_sim"/>
-    <!--android:order 首选项的顺序(较低的值在前面)-->
-<!--    <EditTextPreference
-        android:key="key_EditTextPreference"
-        android:order="1"
-        android:summary="EditTextPreference 输入框"
-        android:title="EditTextPreference"/>-->
-<!--    <Preference
-        android:key="key_Preference"
-        android:summary="please Click me"
-        android:title="Preference Click Test"
-        />-->
+
+    <ListPreference
+        android:key="touch_size"
+        android:title="悬浮窗大小"
+        android:summary="%s"
+        android:dialogTitle="请选择悬浮窗大小"
+        android:entries="@array/size"
+        android:entryValues="@array/size_num"
+        android:defaultValue="1"/>
+
 
 </PreferenceScreen>

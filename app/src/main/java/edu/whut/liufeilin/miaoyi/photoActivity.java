@@ -2,28 +2,18 @@ package edu.whut.liufeilin.miaoyi;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import java.io.File;
 import java.io.IOException;
-
-import static edu.whut.liufeilin.miaoyi.MainActivity.shotUtils;
 
 
 public class photoActivity extends AppCompatActivity {
-    ImageView imageView;
-    FloatService floatService = MainActivity.getMainActivity().floatService;
+    private ImageView imageView;
+    private final FloatService floatService = MainActivity.floatService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
