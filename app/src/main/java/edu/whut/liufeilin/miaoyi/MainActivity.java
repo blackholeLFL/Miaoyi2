@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private static MainActivity mainActivity;
     private EditText txt;
     private int toucher_size;
+    private String Textcolor;
     public static FloatService floatService;
     private DisplayMetrics dm;
     private final String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preference, false);
         SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Language = mSharedPreferences.getString("language", "");
+        Textcolor= mSharedPreferences.getString("touch_txt_color", "");
 
         //filename = sdPath + "/test/tessdata/" + Language + ".traineddata";
         //手机中不存在训练文件，则在sd卡中写入对应的文件
@@ -171,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(float_flag==0){
                     floatService.Toucher_size=toucher_size;
+                    floatService.setTextColor(Textcolor);
                     floatService.createToucher();
                     float_flag=1;
                     //Log.e("flag","open"+float_flag+"size"+floatService.Toucher_size);

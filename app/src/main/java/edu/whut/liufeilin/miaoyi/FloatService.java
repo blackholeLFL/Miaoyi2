@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
@@ -74,6 +75,7 @@ public class FloatService extends Service {
     private final int ScreenWidth = MainActivity.ScreenWidth;
     private int statusBarHeight = -1;//状态栏高度.
     public int Toucher_size;
+    private int Textcolor;
     private int is_toucher_open=0;
 
 
@@ -248,6 +250,7 @@ public class FloatService extends Service {
 
         //浮动窗口按钮.
         textView = toucherLayout.findViewById(R.id.text);
+        textView.setTextColor(Textcolor);
         LinearLayout linearLayout = toucherLayout.findViewById(R.id.layout);
         Button button = toucherLayout.findViewById(R.id.button);
         //双击：截图并开始选取区域
@@ -333,6 +336,7 @@ public class FloatService extends Service {
 
 
     public int getTouchStatus() { return is_toucher_open;}
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -452,6 +456,17 @@ public class FloatService extends Service {
 
     public void setToucher_size(int size_num){
         Toucher_size=size_num;
+    }
+
+
+    public void setTextColor(String color){
+        if(color.equals("white")){
+            Textcolor=Color.WHITE;
+        }else if(color.equals("black")){
+            Textcolor=Color.BLACK;
+        }else if(color.equals("yellow")){
+            Textcolor=Color.YELLOW;
+        }
     }
 
 

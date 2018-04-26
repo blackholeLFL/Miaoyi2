@@ -17,6 +17,7 @@ import edu.whut.liufeilin.miaoyi.fragment.settingFragment;
 public class settingActivity extends Activity {
     private String Language;
     private int size;
+    private String color;
     private final FloatService floatService=MainActivity.floatService;
 
 
@@ -46,6 +47,18 @@ public class settingActivity extends Activity {
                 }
                 else {
                     floatService.setToucher_size(size);
+                    floatService.hidePopupWindow();
+                    floatService.createToucher();
+                }
+            }
+            else if(key.equals("touch_txt_color")){
+                color= prefs.getString("touch_txt_color", "0");
+                if(floatService.getTouchStatus()==0){
+                    floatService.setTextColor(color);
+                    //Log.e("setting.windowManager" , "null");
+                }
+                else {
+                    floatService.setTextColor(color);
                     floatService.hidePopupWindow();
                     floatService.createToucher();
                 }

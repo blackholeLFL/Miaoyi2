@@ -32,6 +32,15 @@
         android:entries="@array/size"
         android:entryValues="@array/size_num"
         android:defaultValue="1"/>
+    <ListPreference
+        android:key="touch_txt_color"
+        android:title="字体颜色"
+        android:summary="%s"
+        android:dialogTitle="请选择字体颜色"
+        android:entries="@array/color"
+        android:entryValues="@array/color_item"
+        android:defaultValue="#000000"/>
+
 
 
 </PreferenceScreen>

@@ -24,4 +24,15 @@
         <item>3</item>
     </string-array>
 
+    <string-array name="color">
+        <item>白色</item>
+        <item>黑色</item>
+        <item>黄色</item>
+    </string-array>
+    <string-array name="color_item">
+        <item>white</item>
+        <item>black</item>
+        <item>yellow</item>
+    </string-array>
+
 </resources>
