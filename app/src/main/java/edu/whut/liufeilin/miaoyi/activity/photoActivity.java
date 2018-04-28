@@ -1,4 +1,4 @@
-package edu.whut.liufeilin.miaoyi;
+package edu.whut.liufeilin.miaoyi.activity;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.ImageView;
 
 import java.io.IOException;
+
+import edu.whut.liufeilin.miaoyi.R;
 
 
 public class photoActivity extends AppCompatActivity {

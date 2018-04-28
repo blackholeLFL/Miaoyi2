@@ -1,10 +1,9 @@
-package edu.whut.liufeilin.miaoyi;
+package edu.whut.liufeilin.miaoyi.activity;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import edu.whut.liufeilin.miaoyi.fragment.settingFragment;
 
@@ -39,7 +38,7 @@ public class settingActivity extends Activity {
                 floatService.initTessBaseData(Language);
             }
             else if(key.equals("touch_size")){
-                size = Integer.parseInt(prefs.getString("touch_size", "0"));
+                size = Integer.parseInt(prefs.getString("touch_size", ""));
                 //Log.e("settingActivity size" , " " + size);
                 if(floatService.getTouchStatus()==0){
                     floatService.setToucher_size(size);
@@ -52,7 +51,7 @@ public class settingActivity extends Activity {
                 }
             }
             else if(key.equals("touch_txt_color")){
-                color= prefs.getString("touch_txt_color", "0");
+                color= prefs.getString("touch_txt_color", "");
                 if(floatService.getTouchStatus()==0){
                     floatService.setTextColor(color);
                     //Log.e("setting.windowManager" , "null");

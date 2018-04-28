@@ -1,4 +1,4 @@
-package edu.whut.liufeilin.miaoyi;
+package edu.whut.liufeilin.miaoyi.activity;
 
 import android.app.Service;
 import android.content.Context;
@@ -42,6 +42,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.whut.liufeilin.miaoyi.R;
+import edu.whut.liufeilin.miaoyi.ShotUtils;
 import edu.whut.liufeilin.miaoyi.api.TransApi;
 import edu.whut.liufeilin.miaoyi.view.OcrView;
 
@@ -75,7 +77,8 @@ public class FloatService extends Service {
     private final int ScreenWidth = MainActivity.ScreenWidth;
     private int statusBarHeight = -1;//状态栏高度.
     public int Toucher_size;
-    private int Textcolor;
+    //public String Toucher_color;
+    public int Textcolor;
     private int is_toucher_open=0;
 
 
@@ -462,10 +465,10 @@ public class FloatService extends Service {
     public void setTextColor(String color){
         if(color.equals("white")){
             Textcolor=Color.WHITE;
-        }else if(color.equals("black")){
-            Textcolor=Color.BLACK;
         }else if(color.equals("yellow")){
             Textcolor=Color.YELLOW;
+        }else{
+            Textcolor=Color.BLACK;
         }
     }
 
@@ -485,6 +488,5 @@ public class FloatService extends Service {
         }
         return result;
     }
-
 
 }

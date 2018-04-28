@@ -15,10 +15,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -34,7 +34,7 @@
         </provider>
 
         <service
-            android:name=".FloatService"
+            android:name=".activity.FloatService"
             android:enabled="true">
             <intent-filter>
                 <action android:name="edu.whut.liufeilin.miaoyi" />
@@ -42,13 +42,14 @@
         </service>
 
         <activity
-            android:name=".photoActivity"
+            android:name=".activity.photoActivity"
             android:label="@string/title_activity_photo"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
-            android:name=".settingActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:name=".activity.settingActivity"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

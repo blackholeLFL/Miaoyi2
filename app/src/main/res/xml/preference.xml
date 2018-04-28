@@ -39,7 +39,7 @@
         android:dialogTitle="请选择字体颜色"
         android:entries="@array/color"
         android:entryValues="@array/color_item"
-        android:defaultValue="#000000"/>
+        android:defaultValue="black"/>
 
 
 

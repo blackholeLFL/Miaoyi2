@@ -1,4 +1,4 @@
-package edu.whut.liufeilin.miaoyi;
+package edu.whut.liufeilin.miaoyi.activity;
 
 
 import android.Manifest;
@@ -41,9 +41,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import edu.whut.liufeilin.miaoyi.R;
+import edu.whut.liufeilin.miaoyi.ShotUtils;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -52,13 +52,13 @@ public class MainActivity extends AppCompatActivity {
     private static MainActivity mainActivity;
     private EditText txt;
     private int toucher_size;
-    private String Textcolor;
+    private String textcolor;
     public static FloatService floatService;
     private DisplayMetrics dm;
     private final String sdPath = Environment.getExternalStorageDirectory().getPath() + File.separator + "Android/data/" + MainActivity.PACKAGE_NAME + "/files";
     private String Language;
     private final String[] languages = {"eng_sim.traineddata", "chi_sim.traineddata", "jpn.traineddata"};
-    private int float_flag=0;
+    private int float_flag = 0;
     public static ShotUtils shotUtils;
     public static int ScreenHeight;
     public static int ScreenWidth;
@@ -70,11 +70,13 @@ public class MainActivity extends AppCompatActivity {
     }// Used to load the 'native-lib' library on application startup.
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //context = MainActivity.this;
+        setTheme(R.style.SplashTheme);
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            this.getWindow().getDecorView().setBackground(null);
+        }
         setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= 21) {
@@ -89,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preference, false);
         SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Language = mSharedPreferences.getString("language", "");
-        Textcolor= mSharedPreferences.getString("touch_txt_color", "");
+        textcolor = mSharedPreferences.getString("touch_txt_color", "black");
 
         //filename = sdPath + "/test/tessdata/" + Language + ".traineddata";
         //手机中不存在训练文件，则在sd卡中写入对应的文件
@@ -106,9 +108,12 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("error", "报错");
                 }
             }
-            sp.edit().putInt("run", 1).commit();
-            Log.e("success", "载入完成");
+
         }
+        sp.edit().putInt("run", 1).commit();
+        Log.e("success", "载入完成");
+
+
         mainActivity = this;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(MainActivity.this)) {
@@ -158,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
         dm = getResources().getDisplayMetrics();
         ScreenHeight = dm.heightPixels;
         ScreenWidth = dm.widthPixels;
@@ -167,25 +171,24 @@ public class MainActivity extends AppCompatActivity {
         floatService = new FloatService();
 
         bindServiceConnection();
-        toucher_size=Integer.parseInt(mSharedPreferences.getString("touch_size", "0"));
+        toucher_size = Integer.parseInt(mSharedPreferences.getString("touch_size", "0"));
+
         btn_float.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(float_flag==0){
-                    floatService.Toucher_size=toucher_size;
-                    floatService.setTextColor(Textcolor);
+                if (float_flag == 0) {
+                    floatService.Toucher_size = toucher_size;
+                    floatService.setTextColor(textcolor);
                     floatService.createToucher();
-                    float_flag=1;
+                    float_flag = 1;
                     //Log.e("flag","open"+float_flag+"size"+floatService.Toucher_size);
                     btn_float.setText("关闭悬浮窗");
-                }
-                else if(float_flag==1){
+                } else if (float_flag == 1) {
                     floatService.hidePopupWindow();
-                    float_flag=0;
+                    float_flag = 0;
                     //Log.e("flag","ff"+float_flag);
                     btn_float.setText("开启悬浮窗");
                 }
-
             }
         });
 
@@ -196,7 +199,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.e("onCreate", "执行完毕");
     }
-
 
 
     private FloatService.MyBinder myBinder;
@@ -214,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
             floatService = myBinder.getService();
         }
     };
-
 
 
     private void bindServiceConnection() {
@@ -407,7 +408,7 @@ public class MainActivity extends AppCompatActivity {
             //Log.d("MainActivity", "requestCode == ShotUtils.REQUEST_MEDIA_PROJECTION");
             floatService.shotUtils.setData(data);
         } else {
-            Toast.makeText(this,"没有拍到照片",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "没有拍到照片", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -427,6 +428,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         unbindService(connection);
     }
+
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
